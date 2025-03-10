@@ -207,8 +207,9 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             # Load and set icon
             icon_path = f"cmaps/{name}.png"
             if os.path.exists(icon_path):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 64, 32)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 120, 60)
                 image = Gtk.Image.new_from_pixbuf(pixbuf)
+                image.add_css_class("colormap-preview")
                 btn_box.append(image)
             
             # Add label
@@ -300,13 +301,20 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             }
             .colormap-option {
                 color: white;
-                padding: 12px 8px;
+                padding: 8px;
                 margin: 3px;
                 border-radius: 12px;
                 transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-                min-width: 90px;
+                min-width: 120px;
                 background-color: rgba(60, 60, 60, 0.6);
                 border: 1px solid rgba(255, 255, 255, 0.1);
+                overflow: hidden;
+            }
+            .colormap-preview {
+                min-width: 120px;
+                min-height: 60px;
+                margin: -8px -8px 4px -8px;
+                border-radius: 8px 8px 0 0;
             }
             .colormap-option:hover {
                 background-color: rgba(80, 80, 80, 0.8);
