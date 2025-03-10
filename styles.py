@@ -47,36 +47,43 @@ def apply_css():
             padding: 4px;
         }
         .colormap-option {
-            color: white;
-            padding: 8px;
-            margin: 3px;
+            padding: 0;
+            margin: 4px;
             border-radius: 12px;
             transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 120px;
-            background-color: rgba(60, 60, 60, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 160px;
+            min-height: 90px;
+            background: none;
+            border: 2px solid transparent;
+            overflow: hidden;
+            position: relative;
         }
         .colormap-preview {
-            min-width: 120px;
-            min-height: 60px;
-            margin: -8px -8px 4px -8px;
-            border-radius: 8px 8px 0 0;
+            min-width: 160px;
+            min-height: 90px;
+            border-radius: 12px;
         }
         .colormap-option:hover {
-            background-color: rgba(80, 80, 80, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-1px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .colormap-option.selected {
-            background-color: rgba(100, 100, 100, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .colormap-label {
             color: rgba(255, 255, 255, 0.9);
             font-size: 13px;
             font-weight: 500;
-            margin-top: 6px;
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+            padding: 16px 8px 8px 8px;
+            border-radius: 0 0 12px 12px;
         }
         .status-label {
             background-color: rgba(0, 0, 0, 0.5);
