@@ -8,6 +8,7 @@ import time
 from PIL import Image
 import gi
 import cairo
+import os
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, GLib, Gdk, GdkPixbuf, Adw
@@ -122,6 +123,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Initialize colormap settings
         self.colormaps = [
+            ('NO_MAP', None),  # Add NO_MAP option with None as the colormap value
             ('JET', cv2.COLORMAP_JET),
             ('HOT', cv2.COLORMAP_HOT),
             ('INFERNO', cv2.COLORMAP_INFERNO),
@@ -185,21 +187,48 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         popover.set_position(Gtk.PositionType.BOTTOM)
         popover.add_css_class("colormap-popover")
         
-        # Create box for colormap options
-        colormap_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        colormap_box.add_css_class("colormap-box")
+        # Create grid for colormap options
+        colormap_grid = Gtk.Grid()
+        colormap_grid.set_row_spacing(4)
+        colormap_grid.set_column_spacing(4)
+        colormap_grid.add_css_class("colormap-grid")
         
-        # Add colormap options
+        # Add colormap options in a 3x3 grid
         for idx, (name, _) in enumerate(self.colormaps):
-            colormap_btn = Gtk.Button(label=name)
+            # Create button with icon and label
+            colormap_btn = Gtk.Button()
             colormap_btn.add_css_class("colormap-option")
             colormap_btn.add_css_class("flat")
+            
+            # Create vertical box for icon and label
+            btn_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            btn_box.set_halign(Gtk.Align.CENTER)
+            
+            # Load and set icon
+            icon_path = f"cmaps/{name}.png"
+            if os.path.exists(icon_path):
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 64, 32)
+                image = Gtk.Image.new_from_pixbuf(pixbuf)
+                btn_box.append(image)
+            
+            # Add label
+            label = Gtk.Label(label=name)
+            label.add_css_class("colormap-label")
+            btn_box.append(label)
+            
+            colormap_btn.set_child(btn_box)
+            
             if idx == self.current_colormap_idx:
                 colormap_btn.add_css_class("selected")
+            
             colormap_btn.connect("clicked", self.on_colormap_selected, idx)
-            colormap_box.append(colormap_btn)
+            
+            # Add to grid
+            row = idx // 3
+            col = idx % 3
+            colormap_grid.attach(colormap_btn, col, row, 1, 1)
         
-        popover.set_child(colormap_box)
+        popover.set_child(colormap_grid)
         colormap_button.set_popover(popover)
         colormap_button.set_tooltip_text(f"Select Colormap (Current: {self.colormaps[self.current_colormap_idx][0]})")
         top_controls.append(colormap_button)
@@ -264,21 +293,27 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 border-radius: 12px;
                 padding: 8px;
             }
-            .colormap-box {
+            .colormap-grid {
                 margin: 4px;
             }
             .colormap-option {
                 color: white;
-                padding: 8px 16px;
+                padding: 8px;
                 margin: 2px;
-                border-radius: 6px;
-                transition: background-color 200ms ease;
+                border-radius: 8px;
+                transition: all 200ms ease;
+                min-width: 80px;
             }
             .colormap-option:hover {
                 background-color: rgba(255, 255, 255, 0.1);
             }
             .colormap-option.selected {
                 background-color: rgba(255, 255, 255, 0.2);
+            }
+            .colormap-label {
+                color: white;
+                font-size: 12px;
+                margin-top: 4px;
             }
         """)
         Gtk.StyleContext.add_provider_for_display(
@@ -322,15 +357,18 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 
             info, lut = self.cap.info()
             frame = frame.astype(np.float32)
-
-            # save frame to file as numpy array
-            np.save('frame.npy', frame)
             
             # Auto-exposure
             frame -= frame.min()
             frame /= frame.max()
             frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
-            frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
+            
+            # Only apply colormap if not using NO_MAP
+            if self.colormaps[self.current_colormap_idx][1] is not None:
+                frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
+            else:
+                # For NO_MAP, convert to BGR format (grayscale to BGR)
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
             
             if self.draw_temp:
                 utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
@@ -352,8 +390,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 
     def on_colormap_selected(self, button, idx):
         # Remove selected class from previous button
-        colormap_box = button.get_parent()
-        for child in colormap_box:
+        grid = button.get_parent().get_parent()  # Get the grid
+        for child in grid:
             child.remove_css_class("selected")
         
         # Add selected class to clicked button
