@@ -120,6 +120,19 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.cap = None
         self.draw_temp = True
         
+        # Initialize colormap settings
+        self.colormaps = [
+            ('JET', cv2.COLORMAP_JET),
+            ('HOT', cv2.COLORMAP_HOT),
+            ('INFERNO', cv2.COLORMAP_INFERNO),
+            ('PLASMA', cv2.COLORMAP_PLASMA),
+            ('VIRIDIS', cv2.COLORMAP_VIRIDIS),
+            ('MAGMA', cv2.COLORMAP_MAGMA),
+            ('RAINBOW', cv2.COLORMAP_RAINBOW),
+            ('BONE', cv2.COLORMAP_BONE),
+        ]
+        self.current_colormap_idx = 0  # Start with JET
+        
         # Set window properties
         self.set_default_size(800, 600)
         self.set_size_request(384, 288)  # Minimum size based on thermal camera resolution
@@ -159,6 +172,16 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         temp_toggle_button.connect("toggled", self.on_temp_toggle)
         temp_toggle_button.set_tooltip_text("Toggle Temperature Display")
         top_controls.append(temp_toggle_button)
+        
+        # Add colormap toggle button
+        colormap_button = Gtk.Button()
+        colormap_button.set_icon_name("color-select-symbolic")
+        colormap_button.add_css_class("circular")
+        colormap_button.add_css_class("flat")
+        colormap_button.add_css_class("colormap-button")
+        colormap_button.connect("clicked", self.on_colormap_clicked)
+        colormap_button.set_tooltip_text(f"Colormap: {self.colormaps[self.current_colormap_idx][0]}")
+        top_controls.append(colormap_button)
         
         # Add shutter button
         self.shutter_button = ShutterButton()
@@ -211,6 +234,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 color: black;
                 -gtk-icon-size: 24px;
             }
+            .colormap-button {
+                color: black;
+                -gtk-icon-size: 24px;
+            }
         """)
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
@@ -258,7 +285,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             frame -= frame.min()
             frame /= frame.max()
             frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
-            frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+            frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
             
             if self.draw_temp:
                 utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
@@ -277,6 +304,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             
     def on_temp_toggle(self, button):
         self.draw_temp = button.get_active()
+                
+    def on_colormap_clicked(self, button):
+        self.current_colormap_idx = (self.current_colormap_idx + 1) % len(self.colormaps)
+        button.set_tooltip_text(f"Colormap: {self.colormaps[self.current_colormap_idx][0]}")
                 
     def on_screenshot_clicked(self, button):
         if self.thermal_view.current_frame is not None:
