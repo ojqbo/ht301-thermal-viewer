@@ -225,7 +225,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 
     def on_colormap_selected(self, button, idx):
         # Remove selected class from previous button
-        grid = button.get_parent().get_parent()  # Get the grid
+        grid = button.get_parent()  # Get the grid
         for child in grid:
             child.remove_css_class("selected")
         
@@ -236,13 +236,14 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.current_colormap_idx = idx
         
         # Update tooltip on main colormap button
-        popover = button.get_root().get_first_child()
+        popover = button.get_ancestor(Gtk.Popover)
         menu_button = popover.get_parent()
         if menu_button:
             menu_button.set_tooltip_text(f"Select Colormap (Current: {self.colormaps[self.current_colormap_idx][0]})")
         
         # Close the popover
-        popover.popdown()
+        if popover:
+            popover.set_visible(False)
                 
     def on_screenshot_clicked(self, button):
         if self.thermal_view.current_frame is not None:
