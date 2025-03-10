@@ -120,17 +120,12 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.cap = None
         self.draw_temp = True
         
+        # Set window properties
+        self.set_default_size(800, 600)
+        self.set_size_request(384, 288)  # Minimum size based on thermal camera resolution
+        
         # Create main layout
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        
-        # Create header bar
-        header_bar = Adw.HeaderBar()
-        self.main_box.append(header_bar)
-        
-        # Add buttons to header bar
-        self.calibrate_button = Gtk.Button(label="Calibrate")
-        self.calibrate_button.connect("clicked", self.on_calibrate_clicked)
-        header_bar.pack_start(self.calibrate_button)
         
         # Create content area
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -147,23 +142,60 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.thermal_view = ThermalView()
         content.append(self.thermal_view)
         
-        # Create controls box
+        # Create controls box with dark background
+        controls_overlay = Gtk.Overlay()
+        controls_overlay.set_vexpand(False)
+        
+        controls_bg = Gtk.Box()
+        controls_bg.add_css_class("controls-background")
+        controls_overlay.set_child(controls_bg)
+        
         controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         controls.set_halign(Gtk.Align.CENTER)
+        controls.set_valign(Gtk.Align.CENTER)
         controls.add_css_class("controls")
-        content.append(controls)
+        controls_overlay.add_overlay(controls)
+        
+        content.append(controls_overlay)
         
         # Add shutter button
         self.shutter_button = ShutterButton()
         self.shutter_button.connect("clicked", self.on_screenshot_clicked)
         controls.append(self.shutter_button)
         
+        # Add calibrate button as a small icon button
+        calibrate_button = Gtk.Button()
+        calibrate_button.set_icon_name("view-refresh-symbolic")
+        calibrate_button.add_css_class("circular")
+        calibrate_button.add_css_class("flat")
+        calibrate_button.connect("clicked", self.on_calibrate_clicked)
+        calibrate_button.set_tooltip_text("Calibrate")
+        controls.append(calibrate_button)
+        
+        # Add CSS for styling
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b"""
+            .controls-background {
+                background-color: rgba(0, 0, 0, 0.3);
+                padding: 8px;
+                margin: 0;
+            }
+            .controls button.circular {
+                margin: 8px;
+                padding: 12px;
+                min-width: 48px;
+                min-height: 48px;
+                border-radius: 9999px;
+            }
+        """)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+        
         # Set window content
         self.set_content(self.main_box)
-        
-        # Set default window size with minimum constraints
-        self.set_default_size(800, 600)
-        self.set_size_request(384, 288)  # Minimum size based on thermal camera resolution
         
         # Connect window close signal
         self.connect("close-request", self.on_window_close)

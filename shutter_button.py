@@ -4,6 +4,9 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, GLib, Gdk
 
+HOVER_SCALE = 1.05
+HOVER_DURATION = 125
+
 class ShutterButton(Gtk.Button):
     def __init__(self):
         super().__init__()
@@ -23,8 +26,8 @@ class ShutterButton(Gtk.Button):
         
         # Set up drawing area
         self.drawing_area = Gtk.DrawingArea()
-        self.drawing_area.set_content_width(48)
-        self.drawing_area.set_content_height(48)
+        self.drawing_area.set_content_width(64)
+        self.drawing_area.set_content_height(64)
         self.drawing_area.set_draw_func(self.on_draw)
         self.set_child(self.drawing_area)
         
@@ -44,10 +47,10 @@ class ShutterButton(Gtk.Button):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b"""
             .shutterbutton {
-                margin: 12px;
+                margin: 16px;
                 padding: 0;
-                min-width: 48px;
-                min-height: 48px;
+                min-width: 64px;
+                min-height: 64px;
             }
             .shutterbutton.circular {
                 border-radius: 9999px;
@@ -129,6 +132,11 @@ class ShutterButton(Gtk.Button):
         cr.scale(scale, scale)
         cr.translate(-center_x, -center_y)
         
+        # Draw background circle
+        cr.arc(center_x, center_y, radius + border_width, 0, 2 * math.pi)
+        cr.set_source_rgba(0.2, 0.2, 0.2, 0.6)  # Semi-transparent dark background
+        cr.fill()
+        
         # Draw outer circle
         cr.arc(center_x, center_y, radius + border_width/2, 0, 2 * math.pi)
         cr.set_source_rgb(1, 1, 1)
@@ -144,7 +152,7 @@ class ShutterButton(Gtk.Button):
         return True
         
     def on_hover_enter(self, controller, x, y):
-        self.start_animation(True, 1.05)  # Scale up to 105%
+        self.start_animation(True, HOVER_SCALE)  # Scale up to 105%
         
     def on_hover_leave(self, controller):
         self.start_animation(True, 1.0)  # Scale back to 100%
