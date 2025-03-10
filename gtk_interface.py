@@ -25,7 +25,7 @@ class ThermalView(Gtk.Box):
         self.drawing_area.set_vexpand(True)
         self.drawing_area.set_hexpand(True)
         
-        # Create an overlay to show status text
+        # Create an overlay to show status text and controls
         self.overlay = Gtk.Overlay()
         self.overlay.set_child(self.drawing_area)
         
@@ -126,37 +126,18 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Create main layout
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        
-        # Create content area
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        content.set_vexpand(True)
-        content.set_hexpand(True)
-        self.main_box.append(content)
-        
-        # Create breakpoint for responsive layout
-        breakpoint = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 400px"))
-        breakpoint.add_setter(content, "orientation", Gtk.Orientation.VERTICAL)
-        self.add_breakpoint(breakpoint)
+        self.main_box.add_css_class("main-box")
         
         # Create thermal view
         self.thermal_view = ThermalView()
-        content.append(self.thermal_view)
+        self.main_box.append(self.thermal_view)
         
-        # Create controls box with dark background
-        controls_overlay = Gtk.Overlay()
-        controls_overlay.set_vexpand(False)
-        
-        controls_bg = Gtk.Box()
-        controls_bg.add_css_class("controls-background")
-        controls_overlay.set_child(controls_bg)
-        
+        # Create controls box
         controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         controls.set_halign(Gtk.Align.CENTER)
-        controls.set_valign(Gtk.Align.CENTER)
+        controls.set_valign(Gtk.Align.END)
+        controls.set_margin_bottom(16)
         controls.add_css_class("controls")
-        controls_overlay.add_overlay(controls)
-        
-        content.append(controls_overlay)
         
         # Add shutter button
         self.shutter_button = ShutterButton()
@@ -172,13 +153,17 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         calibrate_button.set_tooltip_text("Calibrate")
         controls.append(calibrate_button)
         
+        # Add controls to the thermal view's overlay
+        self.thermal_view.overlay.add_overlay(controls)
+        
         # Add CSS for styling
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b"""
-            .controls-background {
-                background-color: rgba(0, 0, 0, 0.3);
-                padding: 8px;
-                margin: 0;
+            .main-box {
+                background-color: black;
+            }
+            window {
+                background-color: black;
             }
             .controls button.circular {
                 margin: 8px;
