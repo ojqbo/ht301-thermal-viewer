@@ -34,28 +34,19 @@ class ThermalView(Gtk.DrawingArea):
         print("ThermalView on_draw called")  # Debug print
         if self.current_frame is None:
             print("Current frame is None")  # Debug print
-            # Use frame count to generate a cycling color
-            hue = (self.frame_count % 360) / 360.0  # Cycles through hues
+            # Draw "Waiting for camera" text
+            cr.set_source_rgb(0, 0, 0)  # Black text
+            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+            cr.set_font_size(20)
             
-            # Convert HSV to RGB (simplified conversion)
-            c = 1 - abs((hue * 6) % 2 - 1)
-            x = hue * 6
-            if x < 1:
-                r, g, b = 1, c, 0
-            elif x < 2:
-                r, g, b = c, 1, 0
-            elif x < 3:
-                r, g, b = 0, 1, c
-            elif x < 4:
-                r, g, b = 0, c, 1
-            elif x < 5:
-                r, g, b = c, 0, 1
-            else:
-                r, g, b = 1, 0, c
-                
-            cr.set_source_rgb(r, g, b)
-            cr.rectangle(0, 0, width, height)
-            cr.fill()
+            # Center the text
+            text = "Waiting for camera"
+            text_extents = cr.text_extents(text)
+            x = (width - text_extents.width) / 2
+            y = (height + text_extents.height) / 2
+            
+            cr.move_to(x, y)
+            cr.show_text(text)
             return False
             
         try:
@@ -188,7 +179,6 @@ class ThermalCameraWindow(Gtk.Window):
                 utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
                 
             self.thermal_view.update_frame(frame)
-            self.thermal_view.show()
             return True
         except Exception as e:
             print(f"Error updating frame: {e}")
