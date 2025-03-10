@@ -21,19 +21,14 @@ class ThermalView(Gtk.DrawingArea):
         self.set_hexpand(True)
         # Set the draw function for the drawing area
         self.set_draw_func(self.on_draw)
-        print("ThermalView initialized")  # Debug print
         
     def update_frame(self, frame):
-        print(f"ThermalView update_frame called with frame shape: {frame.shape}")  # Debug print
         self.current_frame = frame
         self.frame_count += 1
         self.queue_draw()  # Request a redraw
-        print(f"Frame {self.frame_count} update requested")  # Debug print
         
     def on_draw(self, widget, cr, width, height):
-        print("ThermalView on_draw called")  # Debug print
         if self.current_frame is None:
-            print("Current frame is None")  # Debug print
             # Draw "Waiting for camera" text
             cr.set_source_rgb(0, 0, 0)  # Black text
             cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
@@ -82,11 +77,10 @@ class ThermalView(Gtk.DrawingArea):
             cr.paint()
             cr.restore()
             
-            print(f"Frame {self.frame_count} drawn successfully")  # Debug print
             return True
             
         except Exception as e:
-            print(f"Error drawing frame: {e}")  # Debug print
+            print(f"Error drawing frame: {e}")
             import traceback
             traceback.print_exc()  # Print full traceback for debugging
             return False
@@ -132,36 +126,28 @@ class ThermalCameraWindow(Gtk.Window):
         # Connect to realize signal to ensure window is ready
         self.connect("realize", self.on_window_realize)
         
-        print("ThermalCameraWindow initialized")  # Debug print
-        
     def on_window_realize(self, window):
-        print("Window realized, initializing camera...")  # Debug print
         # Initialize camera after window is realized
         GLib.idle_add(self.initialize_camera)
         
     def initialize_camera(self):
-        print("Initializing camera...")  # Debug print
         try:
             self.cap = ht301_hacklib.HT301()
             # Start continuous update loop after camera is initialized
             GLib.idle_add(self.update_frame)
-            print("Camera initialized successfully")
         except Exception as e:
             print(f"Failed to initialize camera: {e}")
             self.close()
         
     def update_frame(self):
         if self.cap is None:
-            print("Camera not initialized, skipping frame update")  # Debug print
             return False
             
         try:
             ret, frame = self.cap.read()  # introduces a delay matching the camera FPS
             if not ret:
-                print("Failed to read frame")  # Debug print
                 return False
                 
-            print(f"Raw frame shape: {frame.shape}, min/max: {frame.min()}/{frame.max()}")  # Debug print
             info, lut = self.cap.info()
             frame = frame.astype(np.float32)
             
@@ -170,8 +156,6 @@ class ThermalCameraWindow(Gtk.Window):
             frame /= frame.max()
             frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
             frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-            
-            print(f"Processed frame shape: {frame.shape}, min/max: {frame.min()}/{frame.max()}")  # Debug print
             
             if self.draw_temp:
                 utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
@@ -211,16 +195,12 @@ class ThermalCameraApp(Gtk.Application):
             self.window.present()
 
 def main():
-    print("Starting Thermal Camera Application...")  # Debug print
     try:
         app = ThermalCameraApp()
-        print("Application created, running main loop...")  # Debug print
         return app.run(None)
     except Exception as e:
-        print(f"Error starting application: {e}")  # Debug print
+        print(f"Error starting application: {e}")
         return 1
 
 if __name__ == '__main__':
-    print("Script started")  # Debug print
-    exit_code = main()
-    print(f"Application exited with code: {exit_code}")  # Debug print 
+    exit_code = main() 
