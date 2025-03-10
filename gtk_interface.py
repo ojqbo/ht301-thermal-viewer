@@ -144,7 +144,7 @@ class ThermalCameraWindow(Gtk.Window):
         try:
             self.cap = ht301_hacklib.HT301()
             # Start update loop after camera is initialized
-            GLib.timeout_add(333, self.update_frame)  # Changed to 33ms for ~30fps
+            # GLib.timeout_add(33, self.update_frame)  # Changed to 33ms for ~30fps
             print("Camera initialized successfully")
         except Exception as e:
             print(f"Failed to initialize camera: {e}")
@@ -156,7 +156,7 @@ class ThermalCameraWindow(Gtk.Window):
             return False
             
         try:
-            ret, frame = self.cap.read()
+            ret, frame = self.cap.read()  # introduces a delay matching the camera FPS
             if not ret:
                 print("Failed to read frame")  # Debug print
                 return False
