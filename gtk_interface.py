@@ -138,6 +138,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         controls.set_valign(Gtk.Align.END)
         controls.set_margin_bottom(16)
         controls.add_css_class("controls")
+        controls.add_css_class("controls-container")
         
         # Add shutter button
         self.shutter_button = ShutterButton()
@@ -149,6 +150,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         calibrate_button.set_icon_name("view-refresh-symbolic")
         calibrate_button.add_css_class("circular")
         calibrate_button.add_css_class("flat")
+        calibrate_button.add_css_class("calibrate-button")
         calibrate_button.connect("clicked", self.on_calibrate_clicked)
         calibrate_button.set_tooltip_text("Calibrate")
         controls.append(calibrate_button)
@@ -165,12 +167,24 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             window {
                 background-color: black;
             }
+            .controls-container {
+                background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 9999px;
+                padding: 4px;
+            }
             .controls button.circular {
                 margin: 8px;
                 padding: 12px;
                 min-width: 48px;
                 min-height: 48px;
                 border-radius: 9999px;
+            }
+            .controls button.circular:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            .calibrate-button {
+                color: black;
+                -gtk-icon-size: 24px;
             }
         """)
         Gtk.StyleContext.add_provider_for_display(
