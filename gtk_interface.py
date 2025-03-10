@@ -174,13 +174,34 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         top_controls.append(temp_toggle_button)
         
         # Add colormap toggle button
-        colormap_button = Gtk.Button()
+        colormap_button = Gtk.MenuButton()
         colormap_button.set_icon_name("color-select-symbolic")
         colormap_button.add_css_class("circular")
         colormap_button.add_css_class("flat")
         colormap_button.add_css_class("colormap-button")
-        colormap_button.connect("clicked", self.on_colormap_clicked)
-        colormap_button.set_tooltip_text(f"Colormap: {self.colormaps[self.current_colormap_idx][0]}")
+        
+        # Create popover menu for colormaps
+        popover = Gtk.Popover()
+        popover.set_position(Gtk.PositionType.BOTTOM)
+        popover.add_css_class("colormap-popover")
+        
+        # Create box for colormap options
+        colormap_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        colormap_box.add_css_class("colormap-box")
+        
+        # Add colormap options
+        for idx, (name, _) in enumerate(self.colormaps):
+            colormap_btn = Gtk.Button(label=name)
+            colormap_btn.add_css_class("colormap-option")
+            colormap_btn.add_css_class("flat")
+            if idx == self.current_colormap_idx:
+                colormap_btn.add_css_class("selected")
+            colormap_btn.connect("clicked", self.on_colormap_selected, idx)
+            colormap_box.append(colormap_btn)
+        
+        popover.set_child(colormap_box)
+        colormap_button.set_popover(popover)
+        colormap_button.set_tooltip_text(f"Select Colormap (Current: {self.colormaps[self.current_colormap_idx][0]})")
         top_controls.append(colormap_button)
         
         # Add shutter button
@@ -238,6 +259,27 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 color: black;
                 -gtk-icon-size: 24px;
             }
+            .colormap-popover {
+                background-color: rgba(30, 30, 30, 0.95);
+                border-radius: 12px;
+                padding: 8px;
+            }
+            .colormap-box {
+                margin: 4px;
+            }
+            .colormap-option {
+                color: white;
+                padding: 8px 16px;
+                margin: 2px;
+                border-radius: 6px;
+                transition: background-color 200ms ease;
+            }
+            .colormap-option:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            .colormap-option.selected {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
         """)
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
@@ -280,6 +322,9 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 
             info, lut = self.cap.info()
             frame = frame.astype(np.float32)
+
+            # save frame to file as numpy array
+            np.save('frame.npy', frame)
             
             # Auto-exposure
             frame -= frame.min()
@@ -305,9 +350,26 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def on_temp_toggle(self, button):
         self.draw_temp = button.get_active()
                 
-    def on_colormap_clicked(self, button):
-        self.current_colormap_idx = (self.current_colormap_idx + 1) % len(self.colormaps)
-        button.set_tooltip_text(f"Colormap: {self.colormaps[self.current_colormap_idx][0]}")
+    def on_colormap_selected(self, button, idx):
+        # Remove selected class from previous button
+        colormap_box = button.get_parent()
+        for child in colormap_box:
+            child.remove_css_class("selected")
+        
+        # Add selected class to clicked button
+        button.add_css_class("selected")
+        
+        # Update colormap
+        self.current_colormap_idx = idx
+        
+        # Update tooltip on main colormap button
+        popover = button.get_root().get_first_child()
+        menu_button = popover.get_parent()
+        if menu_button:
+            menu_button.set_tooltip_text(f"Select Colormap (Current: {self.colormaps[self.current_colormap_idx][0]})")
+        
+        # Close the popover
+        popover.popdown()
                 
     def on_screenshot_clicked(self, button):
         if self.thermal_view.current_frame is not None:
