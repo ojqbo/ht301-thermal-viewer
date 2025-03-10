@@ -9,71 +9,97 @@ from PIL import Image
 import gi
 import cairo
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, GLib, Gdk, GdkPixbuf
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, GLib, Gdk, GdkPixbuf, Adw
 
-class ThermalView(Gtk.DrawingArea):
+class ThermalView(Gtk.Box):
     def __init__(self):
         super().__init__()
         self.current_frame = None
         self.frame_count = 0
-        self.set_size_request(384, 288)
-        self.set_vexpand(True)
-        self.set_hexpand(True)
-        # Set the draw function for the drawing area
-        self.set_draw_func(self.on_draw)
+        
+        # Create a drawing area for the thermal view
+        self.drawing_area = Gtk.DrawingArea()
+        self.drawing_area.set_draw_func(self.on_draw)
+        self.drawing_area.set_vexpand(True)
+        self.drawing_area.set_hexpand(True)
+        
+        # Create an overlay to show status text
+        self.overlay = Gtk.Overlay()
+        self.overlay.set_child(self.drawing_area)
+        
+        # Status label
+        self.status_label = Gtk.Label()
+        self.status_label.set_visible(False)
+        self.status_label.add_css_class("status-label")
+        self.overlay.add_overlay(self.status_label)
+        
+        # Add the overlay to the box
+        self.append(self.overlay)
+        
+        # Add CSS for styling
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b"""
+            .status-label {
+                background-color: rgba(0, 0, 0, 0.5);
+                color: white;
+                padding: 8px;
+                border-radius: 4px;
+                margin: 8px;
+            }
+        """)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
         
     def update_frame(self, frame):
         self.current_frame = frame
         self.frame_count += 1
-        self.queue_draw()  # Request a redraw
+        self.status_label.set_visible(False)
+        self.drawing_area.queue_draw()
         
-    def on_draw(self, widget, cr, width, height):
+    def on_draw(self, drawing_area, cr, width, height):
         if self.current_frame is None:
-            # Draw "Waiting for camera" text
-            cr.set_source_rgb(0, 0, 0)  # Black text
-            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-            cr.set_font_size(20)
-            
-            # Center the text
-            text = "Waiting for camera"
-            text_extents = cr.text_extents(text)
-            x = (width - text_extents.width) / 2
-            y = (height + text_extents.height) / 2
-            
-            cr.move_to(x, y)
-            cr.show_text(text)
+            # Show waiting message with proper styling
+            self.status_label.set_visible(True)
+            self.status_label.set_text("Waiting for camera")
             return False
             
         try:
-            # Convert BGR to RGB (OpenCV uses BGR)
+            # Convert BGR to RGB
             frame_rgb = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2RGB)
             
             # Create a GdkPixbuf from the numpy array
-            height, width = frame_rgb.shape[:2]
+            frame_height, frame_width = frame_rgb.shape[:2]
             pixbuf = GdkPixbuf.Pixbuf.new_from_data(
                 frame_rgb.tobytes(),
                 GdkPixbuf.Colorspace.RGB,
                 False,
                 8,
-                width,
-                height,
-                width * 3
+                frame_width,
+                frame_height,
+                frame_width * 3
             )
             
-            # Scale the pixbuf to fit the drawing area
-            scale_x = width / pixbuf.get_width()
-            scale_y = height / pixbuf.get_height()
+            # Calculate scaling to maintain aspect ratio
+            scale_x = width / frame_width
+            scale_y = height / frame_height
             scale = min(scale_x, scale_y)
             
-            # Calculate centering offsets
-            offset_x = (width - pixbuf.get_width() * scale) / 2
-            offset_y = (height - pixbuf.get_height() * scale) / 2
+            # Calculate centered position
+            scaled_width = frame_width * scale
+            scaled_height = frame_height * scale
+            x_offset = (width - scaled_width) / 2
+            y_offset = (height - scaled_height) / 2
             
-            # Draw the pixbuf
+            # Draw the scaled image
             cr.save()
-            cr.translate(offset_x, offset_y)
+            cr.translate(x_offset, y_offset)
             cr.scale(scale, scale)
             Gdk.cairo_set_source_pixbuf(cr, pixbuf, 0, 0)
+            cr.get_source().set_filter(cairo.Filter.BILINEAR)
             cr.paint()
             cr.restore()
             
@@ -82,10 +108,10 @@ class ThermalView(Gtk.DrawingArea):
         except Exception as e:
             print(f"Error drawing frame: {e}")
             import traceback
-            traceback.print_exc()  # Print full traceback for debugging
+            traceback.print_exc()
             return False
 
-class ThermalCameraWindow(Gtk.Window):
+class ThermalCameraWindow(Adw.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
@@ -93,9 +119,12 @@ class ThermalCameraWindow(Gtk.Window):
         self.cap = None
         self.draw_temp = True
         
+        # Create main layout
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        
         # Create header bar
-        header_bar = Gtk.HeaderBar()
-        self.set_titlebar(header_bar)
+        header_bar = Adw.HeaderBar()
+        self.main_box.append(header_bar)
         
         # Add buttons to header bar
         self.calibrate_button = Gtk.Button(label="Calibrate")
@@ -106,19 +135,27 @@ class ThermalCameraWindow(Gtk.Window):
         self.screenshot_button.connect("clicked", self.on_screenshot_clicked)
         header_bar.pack_end(self.screenshot_button)
         
+        # Create content area
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        content.set_vexpand(True)
+        content.set_hexpand(True)
+        self.main_box.append(content)
+        
+        # Create breakpoint for responsive layout
+        breakpoint = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 400px"))
+        breakpoint.add_setter(content, "orientation", Gtk.Orientation.VERTICAL)
+        self.add_breakpoint(breakpoint)
+        
         # Create thermal view
         self.thermal_view = ThermalView()
+        content.append(self.thermal_view)
         
-        # Create a box to hold the thermal view
-        box = Gtk.Box()
-        box.set_vexpand(True)
-        box.set_hexpand(True)
-        box.append(self.thermal_view)
+        # Set window content
+        self.set_content(self.main_box)
         
-        self.set_child(box)
-        
-        # Set default window size
-        self.set_default_size(384, 288)
+        # Set default window size with minimum constraints
+        self.set_default_size(800, 600)
+        self.set_size_request(384, 288)  # Minimum size based on thermal camera resolution
         
         # Connect window close signal
         self.connect("close-request", self.on_window_close)
@@ -135,18 +172,20 @@ class ThermalCameraWindow(Gtk.Window):
             self.cap = ht301_hacklib.HT301()
             # Start continuous update loop after camera is initialized
             GLib.idle_add(self.update_frame)
+            return False
         except Exception as e:
             print(f"Failed to initialize camera: {e}")
             self.close()
+            return False
         
     def update_frame(self):
         if self.cap is None:
-            return False
+            return True
             
         try:
-            ret, frame = self.cap.read()  # introduces a delay matching the camera FPS
+            ret, frame = self.cap.read()
             if not ret:
-                return False
+                return True
                 
             info, lut = self.cap.info()
             frame = frame.astype(np.float32)
@@ -166,7 +205,7 @@ class ThermalCameraWindow(Gtk.Window):
             return True
         except Exception as e:
             print(f"Error updating frame: {e}")
-            return False
+            return True
         
     def on_calibrate_clicked(self, button):
         if self.cap:
@@ -181,17 +220,16 @@ class ThermalCameraWindow(Gtk.Window):
         if self.cap:
             self.cap.release()
         self.get_application().quit()
-        return False
+        return True
 
-class ThermalCameraApp(Gtk.Application):
+class ThermalCameraApp(Adw.Application):
     def __init__(self):
         super().__init__(application_id='org.thermalcam.app')
         self.window = None
         
     def do_activate(self):
         if not self.window:
-            self.window = ThermalCameraWindow(title="HT301 Thermal Camera")
-            self.window.set_application(self)
+            self.window = ThermalCameraWindow(application=self)
             self.window.present()
 
 def main():
