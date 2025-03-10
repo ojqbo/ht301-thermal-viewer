@@ -289,31 +289,40 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 -gtk-icon-size: 24px;
             }
             .colormap-popover {
-                background-color: rgba(30, 30, 30, 0.95);
-                border-radius: 12px;
-                padding: 8px;
+                background-color: rgba(40, 40, 40, 0.98);
+                border-radius: 16px;
+                padding: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             }
             .colormap-grid {
                 margin: 4px;
+                padding: 4px;
             }
             .colormap-option {
                 color: white;
-                padding: 8px;
-                margin: 2px;
-                border-radius: 8px;
-                transition: all 200ms ease;
-                min-width: 80px;
+                padding: 12px 8px;
+                margin: 3px;
+                border-radius: 12px;
+                transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+                min-width: 90px;
+                background-color: rgba(60, 60, 60, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
             .colormap-option:hover {
-                background-color: rgba(255, 255, 255, 0.1);
+                background-color: rgba(80, 80, 80, 0.8);
+                transform: translateY(-1px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             }
             .colormap-option.selected {
-                background-color: rgba(255, 255, 255, 0.2);
+                background-color: rgba(100, 100, 100, 0.9);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             }
             .colormap-label {
-                color: white;
-                font-size: 12px;
-                margin-top: 4px;
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 13px;
+                font-weight: 500;
+                margin-top: 6px;
             }
         """)
         Gtk.StyleContext.add_provider_for_display(
