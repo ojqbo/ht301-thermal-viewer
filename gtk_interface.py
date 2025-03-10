@@ -140,6 +140,26 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         controls.add_css_class("controls")
         controls.add_css_class("controls-container")
         
+        # Create top controls box
+        top_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        top_controls.set_halign(Gtk.Align.END)
+        top_controls.set_valign(Gtk.Align.START)
+        top_controls.set_margin_top(16)
+        top_controls.set_margin_end(16)
+        top_controls.add_css_class("controls")
+        top_controls.add_css_class("controls-container")
+        
+        # Add temperature display toggle button to top controls
+        temp_toggle_button = Gtk.ToggleButton()
+        temp_toggle_button.set_icon_name("zoom-fit-best-symbolic")  # Changed to crosshair icon
+        temp_toggle_button.add_css_class("circular")
+        temp_toggle_button.add_css_class("flat")
+        temp_toggle_button.add_css_class("temp-toggle-button")
+        temp_toggle_button.set_active(self.draw_temp)
+        temp_toggle_button.connect("toggled", self.on_temp_toggle)
+        temp_toggle_button.set_tooltip_text("Toggle Temperature Display")
+        top_controls.append(temp_toggle_button)
+        
         # Add shutter button
         self.shutter_button = ShutterButton()
         self.shutter_button.connect("clicked", self.on_screenshot_clicked)
@@ -157,6 +177,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Add controls to the thermal view's overlay
         self.thermal_view.overlay.add_overlay(controls)
+        self.thermal_view.overlay.add_overlay(top_controls)
         
         # Add CSS for styling
         css_provider = Gtk.CssProvider()
@@ -183,6 +204,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 background-color: rgba(255, 255, 255, 0.2);
             }
             .calibrate-button {
+                color: black;
+                -gtk-icon-size: 24px;
+            }
+            .temp-toggle-button {
                 color: black;
                 -gtk-icon-size: 24px;
             }
@@ -249,6 +274,9 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def on_calibrate_clicked(self, button):
         if self.cap:
             self.cap.calibrate()
+            
+    def on_temp_toggle(self, button):
+        self.draw_temp = button.get_active()
                 
     def on_screenshot_clicked(self, button):
         if self.thermal_view.current_frame is not None:
