@@ -90,6 +90,8 @@ def sub_10001180(fpatmp_, coretmp_, cx):
 
     np_v5 = np.arange(16384.0) - v4
     np_v8 = (np_v5 * v22 + v23) / flt_10003360 + l_flt_1000337C_2
+    # Clamp negative values to zero before taking square root
+    np_v8 = np.maximum(np_v8, 0)
     np_Ttot = np_v8**0.5 - l_flt_1000337C - ABSOLUTE_ZERO_CELSIUS
     np_Tobj_C = ((np_Ttot**4 - part_Tatm_Trefl) * part_emi_t_1)**0.25 + ABSOLUTE_ZERO_CELSIUS
     np_result = np_Tobj_C + distance_c * (np_Tobj_C - airtmp_)
@@ -268,7 +270,8 @@ class HT301:
         return False
 
     def find_device(self):
-        for i in reversed(range(15)):
+        # for i in reversed(range(15)):
+        for i in [0]:
             if debug > 0: print('testing device nr:',i)
             cap = cv2.VideoCapture(i)
             ok = self.isHt301(cap)

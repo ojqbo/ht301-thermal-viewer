@@ -11,7 +11,7 @@ import cairo
 gi.require_version('Gtk', '4.0')
 from gi.repository import Gtk, GLib, Gdk, GdkPixbuf
 
-class ThermalView(Gtk.Picture):
+class ThermalView(Gtk.DrawingArea):
     def __init__(self):
         super().__init__()
         self.current_frame = None
@@ -19,47 +19,86 @@ class ThermalView(Gtk.Picture):
         self.set_size_request(384, 288)
         self.set_vexpand(True)
         self.set_hexpand(True)
+        # Set the draw function for the drawing area
+        self.set_draw_func(self.on_draw)
         print("ThermalView initialized")  # Debug print
         
     def update_frame(self, frame):
         print(f"ThermalView update_frame called with frame shape: {frame.shape}")  # Debug print
         self.current_frame = frame
         self.frame_count += 1
+        self.queue_draw()  # Request a redraw
+        print(f"Frame {self.frame_count} update requested")  # Debug print
         
+    def on_draw(self, widget, cr, width, height):
+        print("ThermalView on_draw called")  # Debug print
+        if self.current_frame is None:
+            print("Current frame is None")  # Debug print
+            # Use frame count to generate a cycling color
+            hue = (self.frame_count % 360) / 360.0  # Cycles through hues
+            
+            # Convert HSV to RGB (simplified conversion)
+            c = 1 - abs((hue * 6) % 2 - 1)
+            x = hue * 6
+            if x < 1:
+                r, g, b = 1, c, 0
+            elif x < 2:
+                r, g, b = c, 1, 0
+            elif x < 3:
+                r, g, b = 0, 1, c
+            elif x < 4:
+                r, g, b = 0, c, 1
+            elif x < 5:
+                r, g, b = c, 0, 1
+            else:
+                r, g, b = 1, 0, c
+                
+            cr.set_source_rgb(r, g, b)
+            cr.rectangle(0, 0, width, height)
+            cr.fill()
+            return False
+            
         try:
             # Convert BGR to RGB (OpenCV uses BGR)
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # Convert frame to RGBA format
-            frame_height, frame_width = frame_rgb.shape[:2]
-            rgba = np.zeros((frame_height, frame_width, 4), dtype=np.uint8)
-            rgba[..., :3] = frame_rgb
-            rgba[..., 3] = 255
+            frame_rgb = cv2.cvtColor(self.current_frame, cv2.COLOR_BGR2RGB)
             
             # Create a GdkPixbuf from the numpy array
-            # Make sure the data is contiguous in memory
-            rgba_contiguous = np.ascontiguousarray(rgba)
+            height, width = frame_rgb.shape[:2]
             pixbuf = GdkPixbuf.Pixbuf.new_from_data(
-                rgba_contiguous.tobytes(),
+                frame_rgb.tobytes(),
                 GdkPixbuf.Colorspace.RGB,
-                True,  # has_alpha
-                8,    # bits_per_sample
-                frame_width,
-                frame_height,
-                frame_width * 4  # rowstride
+                False,
+                8,
+                width,
+                height,
+                width * 3
             )
             
-            # Create texture directly from pixbuf
-            texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+            # Scale the pixbuf to fit the drawing area
+            scale_x = width / pixbuf.get_width()
+            scale_y = height / pixbuf.get_height()
+            scale = min(scale_x, scale_y)
             
-            # Set the texture as the picture source
-            self.set_paintable(texture)
-            print(f"Frame {self.frame_count} updated successfully")  # Debug print
+            # Calculate centering offsets
+            offset_x = (width - pixbuf.get_width() * scale) / 2
+            offset_y = (height - pixbuf.get_height() * scale) / 2
+            
+            # Draw the pixbuf
+            cr.save()
+            cr.translate(offset_x, offset_y)
+            cr.scale(scale, scale)
+            Gdk.cairo_set_source_pixbuf(cr, pixbuf, 0, 0)
+            cr.paint()
+            cr.restore()
+            
+            print(f"Frame {self.frame_count} drawn successfully")  # Debug print
+            return True
             
         except Exception as e:
-            print(f"Error updating frame: {e}")  # Debug print
+            print(f"Error drawing frame: {e}")  # Debug print
             import traceback
             traceback.print_exc()  # Print full traceback for debugging
+            return False
 
 class ThermalCameraWindow(Gtk.Window):
     def __init__(self, *args, **kwargs):
@@ -114,7 +153,7 @@ class ThermalCameraWindow(Gtk.Window):
         try:
             self.cap = ht301_hacklib.HT301()
             # Start update loop after camera is initialized
-            GLib.timeout_add(33, self.update_frame)  # Changed to 33ms for ~30fps
+            GLib.timeout_add(333, self.update_frame)  # Changed to 33ms for ~30fps
             print("Camera initialized successfully")
         except Exception as e:
             print(f"Failed to initialize camera: {e}")
@@ -149,6 +188,7 @@ class ThermalCameraWindow(Gtk.Window):
                 utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
                 
             self.thermal_view.update_frame(frame)
+            self.thermal_view.show()
             return True
         except Exception as e:
             print(f"Error updating frame: {e}")
