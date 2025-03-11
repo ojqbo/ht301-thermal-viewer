@@ -85,14 +85,12 @@ class ControlsManager:
         button.add_css_class("flat")
         button.add_css_class("colormap-button")
         
-        popover = Gtk.Popover()
-        popover.set_position(Gtk.PositionType.BOTTOM)
-        popover.add_css_class("colormap-popover")
-        
         grid = Gtk.Grid()
-        grid.set_row_spacing(4)
-        grid.set_column_spacing(4)
+        grid.set_row_spacing(2)
+        grid.set_column_spacing(2)
         grid.add_css_class("colormap-grid")
+        grid.set_hexpand(True)
+        grid.set_vexpand(True)
         
         for idx, (name, _) in enumerate(self.image_processor.colormaps):
             colormap_btn = self._create_colormap_grid_button(name, idx)
@@ -100,6 +98,10 @@ class ControlsManager:
             col = idx % 3
             grid.attach(colormap_btn, col, row, 1, 1)
             
+        popover = Gtk.Popover()
+        popover.set_position(Gtk.PositionType.BOTTOM)
+        popover.add_css_class("colormap-popover")
+        popover.set_size_request(150, -1)  # Set minimum width but allow height to be natural
         popover.set_child(grid)
         button.set_popover(popover)
         button.set_tooltip_text(f"Select Colormap (Current: {self.image_processor.get_current_colormap_name()})")
@@ -123,6 +125,7 @@ class ControlsManager:
             picture.set_keep_aspect_ratio(False)
             picture.set_hexpand(True)
             picture.set_vexpand(True)
+            picture.set_size_request(50, 30)  # Set minimum size but allow scaling up
             picture.add_css_class("colormap-preview")
             overlay.set_child(picture)
             
@@ -130,7 +133,8 @@ class ControlsManager:
         label.set_halign(Gtk.Align.FILL)
         label.set_valign(Gtk.Align.END)
         label.set_hexpand(True)
-        label.set_size_request(-1, 40)
+        label.set_wrap(True)  # Allow text wrapping if needed
+        label.set_wrap_mode(2)  # WORD_CHAR wrapping
         label.add_css_class("colormap-label")
         overlay.add_overlay(label)
         

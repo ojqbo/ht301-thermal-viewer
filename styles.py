@@ -85,18 +85,14 @@ def apply_css():
         }
         .colormap-option {
             padding: 0;
-            margin: 4px;
-            border-radius: 12px;
+            margin: 2px;
+            border-radius: 8px;
             transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 160px;
-            min-height: 90px;
             background: none;
             border: 2px solid transparent;
         }
         .colormap-preview {
-            min-width: 160px;
-            min-height: 90px;
-            border-radius: 12px;
+            border-radius: 8px;
             background-size: cover;
             background-position: center;
         }
@@ -110,13 +106,12 @@ def apply_css():
         }
         .colormap-label {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
             background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-            padding: 16px 8px 8px 8px;
-            border-radius: 0 0 12px 12px;
-            min-height: 40px;
+            padding: 8px 4px 4px 4px;
+            border-radius: 0 0 8px 8px;
             margin: 0;
         }
         .status-label {
