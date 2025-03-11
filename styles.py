@@ -55,13 +55,13 @@ def apply_css():
             min-height: 90px;
             background: none;
             border: 2px solid transparent;
-            overflow: hidden;
-            position: relative;
         }
         .colormap-preview {
             min-width: 160px;
             min-height: 90px;
             border-radius: 12px;
+            background-size: cover;
+            background-position: center;
         }
         .colormap-option:hover {
             border-color: rgba(255, 255, 255, 0.3);
@@ -75,15 +75,12 @@ def apply_css():
             color: rgba(255, 255, 255, 0.9);
             font-size: 13px;
             font-weight: 500;
-            position: absolute;
-            bottom: 8px;
-            left: 0;
-            right: 0;
-            text-align: center;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
             background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
             padding: 16px 8px 8px 8px;
             border-radius: 0 0 12px 12px;
+            min-height: 40px;
+            margin: 0;
         }
         .status-label {
             background-color: rgba(0, 0, 0, 0.5);

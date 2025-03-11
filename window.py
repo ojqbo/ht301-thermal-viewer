@@ -112,20 +112,32 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             colormap_btn = Gtk.Button()
             colormap_btn.add_css_class("colormap-option")
             colormap_btn.add_css_class("flat")
+            colormap_btn.set_hexpand(True)
+            colormap_btn.set_vexpand(True)
             
             # Create overlay for the button content
             overlay = Gtk.Overlay()
+            overlay.set_hexpand(True)
+            overlay.set_vexpand(True)
             
             # Load and set icon
             icon_path = f"cmaps/{name}.png"
             if os.path.exists(icon_path):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 160, 90)
-                image = Gtk.Image.new_from_pixbuf(pixbuf)
-                image.add_css_class("colormap-preview")
-                overlay.set_child(image)
+                # Create a Picture widget instead of Image for better scaling
+                picture = Gtk.Picture.new_for_filename(icon_path)
+                picture.set_can_shrink(True)
+                picture.set_keep_aspect_ratio(False)
+                picture.set_hexpand(True)
+                picture.set_vexpand(True)
+                picture.add_css_class("colormap-preview")
+                overlay.set_child(picture)
             
             # Add label
             label = Gtk.Label(label=name)
+            label.set_halign(Gtk.Align.FILL)
+            label.set_valign(Gtk.Align.END)
+            label.set_hexpand(True)
+            label.set_size_request(-1, 40)  # Set minimum height for the label
             label.add_css_class("colormap-label")
             overlay.add_overlay(label)
             
