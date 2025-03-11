@@ -170,7 +170,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Add transform button
         transform_button = Gtk.MenuButton()
-        transform_button.set_icon_name("object-flip-horizontal-symbolic")
+        transform_button.set_icon_name("view-more-symbolic")
         transform_button.add_css_class("circular")
         transform_button.add_css_class("flat")
         transform_button.add_css_class("transform-button")
@@ -178,6 +178,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         # Create popover for transform options
         transform_popover = Gtk.Popover()
         transform_popover.set_position(Gtk.PositionType.BOTTOM)
+        transform_popover.add_css_class("transform-popover")
         transform_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         transform_box.set_margin_start(4)
         transform_box.set_margin_end(4)

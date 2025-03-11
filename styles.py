@@ -44,13 +44,39 @@ def apply_css():
             color: black;
             -gtk-icon-size: 24px;
         }
+        .transform-button {
+            color: black;
+            -gtk-icon-size: 24px;
+        }
         .colormap-popover {
+            background-color: rgba(0, 0, 0, 0);
+        }
+        .transform-popover {
+            background-color: rgba(0, 0, 0, 0);
+        }
+        .transform-popover button {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            margin: 2px;
+            border-radius: 8px;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .transform-popover button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(2px);
+        }
+        .transform-popover button:active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .transform-popover button image {
+            -gtk-icon-size: 24px;
+            opacity: 0.9;
         }
         popover > arrow {
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
         }
         popover > contents {
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
             border-radius: 12px;
         }
         .colormap-grid {
