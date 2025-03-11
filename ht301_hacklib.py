@@ -3,6 +3,7 @@ import numpy as np
 import math
 import cv2
 import time
+from pathlib import Path
 
 debug = 0
 
@@ -270,13 +271,17 @@ class HT301:
         return False
 
     def find_device(self):
-        # for i in reversed(range(15)):
-        for i in [1, 0]:
-            if debug > 0: print('testing device nr:',i)
-            cap = cv2.VideoCapture(i)
+        # Find all video devices in /dev and sort them in reverse order
+        # This makes it more likely to find recently plugged in devices first
+        video_devices = sorted(Path('/dev').glob('video*'), reverse=True)
+        
+        for device in video_devices:
+            device_num = int(device.name.replace('video', ''))
+            if debug > 0: print('testing device nr:', device_num)
+            cap = cv2.VideoCapture(device_num)
             ok = self.isHt301(cap)
             cap.release()
-            if ok: return i
+            if ok: return device_num
         raise Exception("HT301 device not found!")
 
     def read_(self):
