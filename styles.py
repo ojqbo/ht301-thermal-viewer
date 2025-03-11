@@ -14,6 +14,12 @@ def apply_css():
             border-radius: 9999px;
             padding: 4px;
         }
+        .controls-left {
+            background-color: rgba(244, 67, 54, 0.2);
+        }
+        .controls-right {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
         .controls button.circular {
             margin: 8px;
             padding: 12px;
@@ -190,6 +196,18 @@ def apply_css():
                 box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
                 background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
             }
+        }
+        
+        .quit-button {
+            color: rgba(255, 255, 255, 0.8);
+            -gtk-icon-size: 24px;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .quit-button:hover {
+            color: rgba(244, 67, 54, 1);
+            background-color: rgba(244, 67, 54, 0.2);
+            transform: scale(1.1);
         }
     """)
     

@@ -17,17 +17,48 @@ class ControlsManager:
         self.controls.add_css_class("controls-container")
         
         self.top_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.top_controls.set_halign(Gtk.Align.END)
+        self.top_controls.set_halign(Gtk.Align.FILL)
         self.top_controls.set_valign(Gtk.Align.START)
         self.top_controls.set_margin_top(16)
-        self.top_controls.set_margin_end(16)
-        self.top_controls.add_css_class("controls")
-        self.top_controls.add_css_class("controls-container")
+        self.top_controls.set_hexpand(True)
+        
+        # Create left and right containers
+        self.top_left_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.top_left_controls.set_margin_start(16)
+        self.top_left_controls.add_css_class("controls")
+        self.top_left_controls.add_css_class("controls-container")
+        self.top_left_controls.add_css_class("controls-left")
+        
+        self.top_right_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.top_right_controls.set_margin_end(16)
+        self.top_right_controls.add_css_class("controls")
+        self.top_right_controls.add_css_class("controls-container")
+        self.top_right_controls.add_css_class("controls-right")
+        
+        # Add containers to top controls
+        self.top_controls.append(self.top_left_controls)
+        
+        # Add spacer between left and right containers
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        self.top_controls.append(spacer)
+        
+        self.top_controls.append(self.top_right_controls)
         
         self._setup_top_controls()
         self._setup_bottom_controls()
         
     def _setup_top_controls(self):
+        # Quit button
+        quit_button = Gtk.Button()
+        quit_button.set_icon_name("window-close-symbolic")
+        quit_button.add_css_class("circular")
+        quit_button.add_css_class("flat")
+        quit_button.add_css_class("quit-button")
+        quit_button.connect("clicked", self._on_quit_clicked)
+        quit_button.set_tooltip_text("Quit Application")
+        self.top_left_controls.append(quit_button)
+
         # Temperature toggle button
         temp_toggle = Gtk.ToggleButton()
         temp_toggle.set_icon_name("zoom-fit-best-symbolic")
@@ -37,15 +68,15 @@ class ControlsManager:
         temp_toggle.set_active(self.image_processor.draw_temp)
         temp_toggle.connect("toggled", self._on_temp_toggle)
         temp_toggle.set_tooltip_text("Toggle Temperature Display")
-        self.top_controls.append(temp_toggle)
+        self.top_right_controls.append(temp_toggle)
         
         # Colormap button
         colormap_button = self._create_colormap_button()
-        self.top_controls.append(colormap_button)
+        self.top_right_controls.append(colormap_button)
         
         # Transform button
         transform_button = self._create_transform_button()
-        self.top_controls.append(transform_button)
+        self.top_right_controls.append(transform_button)
         
     def _setup_bottom_controls(self):
         # Shutter button
@@ -248,4 +279,7 @@ class ControlsManager:
     def _on_rotate_counterclockwise(self, button):
         self.image_processor.rotation = (self.image_processor.rotation - 90) % 360
         if button.get_ancestor(Gtk.Popover):
-            button.get_ancestor(Gtk.Popover).set_visible(False) 
+            button.get_ancestor(Gtk.Popover).set_visible(False)
+
+    def _on_quit_clicked(self, button):
+        self.window.close() 
