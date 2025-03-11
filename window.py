@@ -1,7 +1,7 @@
 import gi
 import cv2
 import time
-from gi.repository import Gtk, GLib, Adw
+from gi.repository import Gtk, GLib, Adw, Gdk
 
 from thermal_view import ThermalView
 from camera_manager import CameraManager
@@ -13,7 +13,6 @@ from styles import apply_css
 class ThermalCameraWindow(Adw.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
         
         # Set window properties
         self.set_default_size(800, 600)
@@ -31,6 +30,14 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Create thermal view
         self.thermal_view = ThermalView()
+        
+        # Enable window dragging from the thermal view area
+        drag_gesture = Gtk.GestureDrag.new()
+        drag_gesture.set_button(Gdk.BUTTON_PRIMARY)  # Only handle left-click drags
+        drag_gesture.connect("drag-begin", self.on_drag_begin)
+        drag_gesture.connect("drag-update", self.on_drag_update)
+        self.thermal_view.drawing_area.add_controller(drag_gesture)  # Add gesture to drawing area
+        
         self.main_box.append(self.thermal_view)
         
         # Create controls
@@ -105,4 +112,21 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.recorder.cleanup()
         self.camera_manager.release()
         self.get_application().quit()
-        return True 
+        return True
+
+    def on_drag_begin(self, gesture, start_x, start_y):
+        # Start window dragging using the root surface
+        surface = self.get_surface()
+        if surface:
+            device = gesture.get_device()
+            surface.begin_move(
+                device,
+                gesture.get_current_button(),
+                int(start_x),
+                int(start_y),
+                gesture.get_current_event_time()
+            )
+        
+    def on_drag_update(self, gesture, offset_x, offset_y):
+        # This is needed to handle the drag update event, but we don't need to do anything here
+        pass 
