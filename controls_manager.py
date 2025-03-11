@@ -1,6 +1,5 @@
 import os
 from gi.repository import Gtk, GdkPixbuf
-from shutter_button import ShutterButton
 
 class ControlsManager:
     def __init__(self, window, image_processor, camera_manager, recorder):
@@ -50,8 +49,13 @@ class ControlsManager:
         
     def _setup_bottom_controls(self):
         # Shutter button
-        self.shutter_button = ShutterButton()
+        self.shutter_button = Gtk.Button()
+        self.shutter_button.set_icon_name("camera-photo-symbolic")
+        self.shutter_button.add_css_class("circular")
+        self.shutter_button.add_css_class("flat")
+        self.shutter_button.add_css_class("shutter-button")
         self.shutter_button.connect("clicked", self._on_screenshot_clicked)
+        self.shutter_button.set_tooltip_text("Take Screenshot")
         self.controls.append(self.shutter_button)
         
         # Record button

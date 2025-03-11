@@ -126,6 +126,31 @@ def apply_css():
             border-radius: 4px;
             margin: 8px;
         }
+        .shutter-button {
+            min-width: 52px;
+            min-height: 52px;
+            margin: 8px;
+            padding: 0;
+            color: white;
+            -gtk-icon-size: 24px;
+            background: transparent;
+            box-shadow: inset 0 0 0 2.5px rgba(33, 150, 243, 0.8);
+            border: none;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .shutter-button:hover {
+            transform: scale(1.05);
+            box-shadow: inset 0 0 0 3px rgba(33, 150, 243, 1),
+                       0 0 12px rgba(33, 150, 243, 0.3);
+        }
+        
+        .shutter-button:active {
+            transform: scale(0.95);
+            background: radial-gradient(circle, rgba(33, 150, 243, 1) 0%, rgba(33, 150, 243, 0.8) 100%);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+        }
+
         .record-button {
             min-width: 52px;
             min-height: 52px;
