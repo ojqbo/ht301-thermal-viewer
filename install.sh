@@ -28,6 +28,18 @@ mkdir -p ~/.local/lib/ht301-thermal-viewer
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/share/applications
 
+# Check if .local/bin is in PATH
+if ! echo "$PATH" | tr ':' '\n' | grep -q "^$HOME/.local/bin$"; then
+    echo "Warning: ~/.local/bin is not in your PATH"
+    if [ ! -f "$HOME/.profile" ]; then
+        echo "Recommendation: Copy the default .profile to your home directory to automatically add ~/.local/bin to your PATH"
+        echo "Run the following command:"
+        echo "cp /etc/skel/.profile ~/"
+        echo "Then log out and log back in for the changes to take effect."
+    fi
+    echo "Note: You may need to add ~/.local/bin to your PATH manually or restart your session."
+fi
+
 # Copy the application files
 cp -r src/ht301_thermal_viewer ~/.local/lib/ht301-thermal-viewer/
 cp -r screenshots ~/.local/lib/ht301-thermal-viewer/
