@@ -31,7 +31,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             ('RAINBOW', cv2.COLORMAP_RAINBOW),
             ('BONE', cv2.COLORMAP_BONE),
         ]
-        self.current_colormap_idx = 0  # Start with JET
+        self.current_colormap_idx = 0  # Start with NO_MAP
         
         # Set window properties
         self.set_default_size(800, 600)
