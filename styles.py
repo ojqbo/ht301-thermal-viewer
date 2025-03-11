@@ -21,7 +21,15 @@ def apply_css():
             min-height: 48px;
             border-radius: 9999px;
         }
-        .controls button.circular:hover {
+        .controls menubutton.circular > button {
+            margin: 8px;
+            padding: 12px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 9999px;
+        }
+        .controls button.circular:hover,
+        .controls menubutton.circular > button:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
         .calibrate-button {
