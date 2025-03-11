@@ -101,22 +101,49 @@ def apply_css():
             margin: 8px;
         }
         .record-button {
-            min-width: 48px;
-            min-height: 48px;
+            min-width: 52px;
+            min-height: 52px;
             margin: 8px;
-            color: @error_color;
+            padding: 0;
+            color: white;
+            -gtk-icon-size: 24px;
+            background: transparent;
+            box-shadow: inset 0 0 0 2.5px rgba(244, 67, 54, 0.8);
+            border: none;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .record-button.recording {
-            background-color: alpha(@error_color, 0.2);
+            background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+            animation: record-pulse 1.5s ease-in-out infinite;
         }
         
         .record-button:hover {
-            background-color: alpha(@error_color, 0.1);
+            transform: scale(1.05);
+            box-shadow: inset 0 0 0 3px rgba(244, 67, 54, 1),
+                       0 0 12px rgba(244, 67, 54, 0.3);
         }
         
         .record-button.recording:hover {
-            background-color: alpha(@error_color, 0.3);
+            transform: scale(1.05);
+            background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.9) 100%);
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+        }
+
+        @keyframes record-pulse {
+            0% { 
+                box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+                background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
+                background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.9) 100%);
+            }
+            100% { 
+                box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+                background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+            }
         }
     """)
     
