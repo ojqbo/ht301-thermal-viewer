@@ -271,7 +271,7 @@ class HT301:
 
     def find_device(self):
         # for i in reversed(range(15)):
-        for i in [0]:
+        for i in [1, 0]:
             if debug > 0: print('testing device nr:',i)
             cap = cv2.VideoCapture(i)
             ok = self.isHt301(cap)
