@@ -37,10 +37,13 @@ def apply_css():
             -gtk-icon-size: 24px;
         }
         .colormap-popover {
-            background-color: rgba(40, 40, 40, 0.98);
-            border-radius: 16px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        popover > arrow {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        popover > contents {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
         }
         .colormap-grid {
             margin: 4px;
