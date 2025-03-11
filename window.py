@@ -19,6 +19,11 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.cap = None
         self.draw_temp = True
         
+        # Image transformation states
+        self.flip_horizontal = False
+        self.flip_vertical = False
+        self.rotation = 0  # 0, 90, 180, 270 degrees
+        
         # Recording state
         self.is_recording = False
         self.video_writer = None
@@ -163,6 +168,52 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         colormap_button.set_tooltip_text(f"Select Colormap (Current: {self.colormaps[self.current_colormap_idx][0]})")
         top_controls.append(colormap_button)
         
+        # Add transform button
+        transform_button = Gtk.MenuButton()
+        transform_button.set_icon_name("object-flip-horizontal-symbolic")
+        transform_button.add_css_class("circular")
+        transform_button.add_css_class("flat")
+        transform_button.add_css_class("transform-button")
+        
+        # Create popover for transform options
+        transform_popover = Gtk.Popover()
+        transform_popover.set_position(Gtk.PositionType.BOTTOM)
+        transform_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        transform_box.set_margin_start(4)
+        transform_box.set_margin_end(4)
+        transform_box.set_margin_top(4)
+        transform_box.set_margin_bottom(4)
+        
+        # Add transform buttons
+        flip_h_btn = Gtk.Button(label="Flip Horizontally")
+        flip_h_btn.add_css_class("flat")
+        flip_h_btn.set_icon_name("object-flip-horizontal-symbolic")
+        flip_h_btn.connect("clicked", self.on_flip_horizontal)
+        transform_box.append(flip_h_btn)
+        
+        flip_v_btn = Gtk.Button(label="Flip Vertically")
+        flip_v_btn.add_css_class("flat")
+        flip_v_btn.set_icon_name("object-flip-vertical-symbolic")
+        flip_v_btn.connect("clicked", self.on_flip_vertical)
+        transform_box.append(flip_v_btn)
+        
+        rotate_cw_btn = Gtk.Button(label="Rotate Clockwise")
+        rotate_cw_btn.add_css_class("flat")
+        rotate_cw_btn.set_icon_name("object-rotate-right-symbolic")
+        rotate_cw_btn.connect("clicked", self.on_rotate_clockwise)
+        transform_box.append(rotate_cw_btn)
+        
+        rotate_ccw_btn = Gtk.Button(label="Rotate Counterclockwise")
+        rotate_ccw_btn.add_css_class("flat")
+        rotate_ccw_btn.set_icon_name("object-rotate-left-symbolic")
+        rotate_ccw_btn.connect("clicked", self.on_rotate_counterclockwise)
+        transform_box.append(rotate_ccw_btn)
+        
+        transform_popover.set_child(transform_box)
+        transform_button.set_popover(transform_popover)
+        transform_button.set_tooltip_text("Image Transformations")
+        top_controls.append(transform_button)
+        
         # Add shutter button
         self.shutter_button = ShutterButton()
         self.shutter_button.connect("clicked", self.on_screenshot_clicked)
@@ -206,45 +257,6 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             print(f"Failed to initialize camera: {e}")
             self.close()
             return False
-        
-    def update_frame(self):
-        if self.cap is None:
-            return True
-            
-        try:
-            ret, frame = self.cap.read()
-            if not ret:
-                return True
-                
-            info, lut = self.cap.info()
-            frame = frame.astype(np.float32)
-            
-            # Auto-exposure
-            frame -= frame.min()
-            frame /= frame.max()
-            frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
-            
-            # Only apply colormap if not using NO_MAP
-            if self.colormaps[self.current_colormap_idx][1] is not None:
-                frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
-            else:
-                # For NO_MAP, convert grayscale to BGR
-                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-            
-            if self.draw_temp:
-                utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
-                utils.drawTemperature(frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
-                utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
-            
-            # Write frame if recording
-            if self.is_recording and self.video_writer is not None:
-                self.video_writer.write(frame)
-                
-            self.thermal_view.update_frame(frame)
-            return True
-        except Exception as e:
-            print(f"Error updating frame: {e}")
-            return True
         
     def on_calibrate_clicked(self, button):
         if self.cap:
@@ -290,10 +302,18 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
     def on_record_toggled(self, button):
         if button.get_active():
+            # Get current frame to determine dimensions
+            if self.thermal_view.current_frame is None:
+                print("Error: No frame available to start recording")
+                return
+                
+            # Get dimensions from current frame
+            height, width = self.thermal_view.current_frame.shape[:2]
+            
             # Start recording
             filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.mp4'
             fourcc = cv2.VideoWriter_fourcc(*'avc1')
-            self.video_writer = cv2.VideoWriter(filename, fourcc, 25.0, (384, 288))
+            self.video_writer = cv2.VideoWriter(filename, fourcc, 25.0, (width, height))
             self.recording_start_time = time.time()
             self.is_recording = True
             button.set_icon_name("media-playback-stop-symbolic")
@@ -307,4 +327,112 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 self.video_writer = None
             button.set_icon_name("media-record-symbolic")
             button.set_tooltip_text("Start Recording")
-            button.remove_css_class("recording") 
+            button.remove_css_class("recording")
+        
+    def on_flip_horizontal(self, button):
+        self.flip_horizontal = not self.flip_horizontal
+        if button.get_ancestor(Gtk.Popover):
+            button.get_ancestor(Gtk.Popover).set_visible(False)
+            
+    def on_flip_vertical(self, button):
+        self.flip_vertical = not self.flip_vertical
+        if button.get_ancestor(Gtk.Popover):
+            button.get_ancestor(Gtk.Popover).set_visible(False)
+            
+    def on_rotate_clockwise(self, button):
+        self.rotation = (self.rotation + 90) % 360
+        if button.get_ancestor(Gtk.Popover):
+            button.get_ancestor(Gtk.Popover).set_visible(False)
+            
+    def on_rotate_counterclockwise(self, button):
+        self.rotation = (self.rotation - 90) % 360
+        if button.get_ancestor(Gtk.Popover):
+            button.get_ancestor(Gtk.Popover).set_visible(False)
+            
+    def apply_transformations(self, frame):
+        # Apply flips
+        if self.flip_horizontal:
+            frame = cv2.flip(frame, 1)
+        if self.flip_vertical:
+            frame = cv2.flip(frame, 0)
+            
+        # Apply rotation
+        if self.rotation != 0:
+            if self.rotation == 90:
+                frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+            elif self.rotation == 180:
+                frame = cv2.rotate(frame, cv2.ROTATE_180)
+            elif self.rotation == 270:
+                frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return frame
+
+    def update_frame(self):
+        if self.cap is None:
+            return True
+            
+        try:
+            ret, frame = self.cap.read()
+            if not ret:
+                return True
+                
+            info, lut = self.cap.info()
+            frame = frame.astype(np.float32)
+            
+            # Auto-exposure
+            frame -= frame.min()
+            frame /= frame.max()
+            frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
+            
+            # Only apply colormap if not using NO_MAP
+            if self.colormaps[self.current_colormap_idx][1] is not None:
+                frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
+            else:
+                # For NO_MAP, convert grayscale to BGR
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            
+            # Apply transformations
+            frame = self.apply_transformations(frame)
+            
+            if self.draw_temp:
+                # Transform temperature point coordinates based on transformations
+                tmin_point = list(info['Tmin_point'])
+                tmax_point = list(info['Tmax_point'])
+                tcenter_point = list(info['Tcenter_point'])
+                
+                shape0, shape1 = frame.shape[1], frame.shape[0]
+                if self.rotation in [90, 270]:
+                    shape0, shape1 = shape1, shape0
+
+                if self.flip_horizontal:
+                    tmin_point[0] = shape0 - tmin_point[0]
+                    tmax_point[0] = shape0 - tmax_point[0]
+                    tcenter_point[0] = shape0 - tcenter_point[0]
+                    
+                if self.flip_vertical:
+                    tmin_point[1] = shape1 - tmin_point[1]
+                    tmax_point[1] = shape1 - tmax_point[1]
+                    tcenter_point[1] = shape1 - tcenter_point[1]
+                    
+                if self.rotation != 0:
+                    for point in [tmin_point, tmax_point, tcenter_point]:
+                        if self.rotation == 90:
+                            point[0], point[1] = frame.shape[1] - point[1], point[0]
+                        elif self.rotation == 180:
+                            point[0] = frame.shape[1] - point[0]
+                            point[1] = frame.shape[0] - point[1]
+                        elif self.rotation == 270:
+                            point[0], point[1] = point[1], frame.shape[0] - point[0]
+                
+                utils.drawTemperature(frame, tuple(tmin_point), info['Tmin_C'], (55,0,0))
+                utils.drawTemperature(frame, tuple(tmax_point), info['Tmax_C'], (0,0,85))
+                utils.drawTemperature(frame, tuple(tcenter_point), info['Tcenter_C'], (0,255,255))
+            
+            # Write frame if recording
+            if self.is_recording and self.video_writer is not None:
+                self.video_writer.write(frame)
+                
+            self.thermal_view.update_frame(frame)
+            return True
+        except Exception as e:
+            print(f"Error updating frame: {e}")
+            return True 
