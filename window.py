@@ -19,6 +19,11 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.cap = None
         self.draw_temp = True
         
+        # Recording state
+        self.is_recording = False
+        self.video_writer = None
+        self.recording_start_time = None
+        
         # Initialize colormap settings
         self.colormaps = [
             ('NO_MAP', None),  # Add NO_MAP option with None as the colormap value
@@ -163,6 +168,16 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.shutter_button.connect("clicked", self.on_screenshot_clicked)
         controls.append(self.shutter_button)
         
+        # Add record button
+        self.record_button = Gtk.ToggleButton()
+        self.record_button.set_icon_name("media-record-symbolic")
+        self.record_button.add_css_class("circular")
+        self.record_button.add_css_class("flat")
+        self.record_button.add_css_class("record-button")
+        self.record_button.connect("toggled", self.on_record_toggled)
+        self.record_button.set_tooltip_text("Start Recording")
+        controls.append(self.record_button)
+        
         # Add calibrate button as a small icon button
         calibrate_button = Gtk.Button()
         calibrate_button.set_icon_name("view-refresh-symbolic")
@@ -213,13 +228,17 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             if self.colormaps[self.current_colormap_idx][1] is not None:
                 frame = cv2.applyColorMap(frame, self.colormaps[self.current_colormap_idx][1])
             else:
-                # For NO_MAP, convert to BGR format (grayscale to BGR)
+                # For NO_MAP, convert grayscale to BGR
                 frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
             
             if self.draw_temp:
                 utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
                 utils.drawTemperature(frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
                 utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
+            
+            # Write frame if recording
+            if self.is_recording and self.video_writer is not None:
+                self.video_writer.write(frame)
                 
             self.thermal_view.update_frame(frame)
             return True
@@ -262,7 +281,30 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             cv2.imwrite(filename, self.thermal_view.current_frame)
             
     def on_window_close(self, window):
+        if self.video_writer is not None:
+            self.video_writer.release()
         if self.cap:
             self.cap.release()
         self.get_application().quit()
-        return True 
+        return True
+        
+    def on_record_toggled(self, button):
+        if button.get_active():
+            # Start recording
+            filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.mp4'
+            fourcc = cv2.VideoWriter_fourcc(*'H265')
+            self.video_writer = cv2.VideoWriter(filename, fourcc, 25.0, (384, 288))
+            self.recording_start_time = time.time()
+            self.is_recording = True
+            button.set_icon_name("media-playback-stop-symbolic")
+            button.set_tooltip_text("Stop Recording")
+            button.add_css_class("recording")
+        else:
+            # Stop recording
+            self.is_recording = False
+            if self.video_writer is not None:
+                self.video_writer.release()
+                self.video_writer = None
+            button.set_icon_name("media-record-symbolic")
+            button.set_tooltip_text("Start Recording")
+            button.remove_css_class("recording") 

@@ -100,6 +100,24 @@ def apply_css():
             border-radius: 4px;
             margin: 8px;
         }
+        .record-button {
+            min-width: 48px;
+            min-height: 48px;
+            margin: 8px;
+            color: @error_color;
+        }
+        
+        .record-button.recording {
+            background-color: alpha(@error_color, 0.2);
+        }
+        
+        .record-button:hover {
+            background-color: alpha(@error_color, 0.1);
+        }
+        
+        .record-button.recording:hover {
+            background-color: alpha(@error_color, 0.3);
+        }
     """)
     
     # Get the default display
