@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import utils
+from .utils import drawTemperature
 
 class ImageProcessor:
     def __init__(self):
@@ -91,9 +91,9 @@ class ImageProcessor:
                 elif self.rotation == 270:
                     point[0], point[1] = point[1], frame.shape[0] - point[0]
                     
-        utils.drawTemperature(frame, tuple(tmin_point), info['Tmin_C'], (55,0,0))
-        utils.drawTemperature(frame, tuple(tmax_point), info['Tmax_C'], (0,0,85))
-        utils.drawTemperature(frame, tuple(tcenter_point), info['Tcenter_C'], (0,255,255))
+        drawTemperature(frame, tuple(tmin_point), info['Tmin_C'], (55,0,0))
+        drawTemperature(frame, tuple(tmax_point), info['Tmax_C'], (0,0,85))
+        drawTemperature(frame, tuple(tcenter_point), info['Tcenter_C'], (0,255,255))
         
         return frame
         

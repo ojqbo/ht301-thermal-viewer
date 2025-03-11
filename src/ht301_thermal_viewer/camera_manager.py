@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import ht301_hacklib
+from .ht301_hacklib import HT301
 
 class CameraManager:
     def __init__(self):
@@ -10,7 +10,7 @@ class CameraManager:
     def initialize(self):
         """Initialize the thermal camera."""
         try:
-            self.cap = ht301_hacklib.HT301()
+            self.cap = HT301()
             if self.cap is None:
                 print("Camera initialization failed - got None")
                 return False

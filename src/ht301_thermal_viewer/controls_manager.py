@@ -1,5 +1,6 @@
 import os
-from gi.repository import Gtk, GdkPixbuf
+import gi
+from gi.repository import Gtk, Gdk, GLib
 
 class ControlsManager:
     def __init__(self, window, image_processor, camera_manager, recorder):
@@ -7,6 +8,9 @@ class ControlsManager:
         self.image_processor = image_processor
         self.camera_manager = camera_manager
         self.recorder = recorder
+        
+        # Get the installation directory for resources
+        self.install_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         
         # Create controls containers
         self.controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -149,7 +153,8 @@ class ControlsManager:
         overlay.set_hexpand(True)
         overlay.set_vexpand(True)
         
-        icon_path = f"cmaps/{name}.png"
+        # Use absolute path for colormap images
+        icon_path = os.path.join(self.install_dir, "ht301_thermal_viewer", "cmaps", f"{name}.png")
         if os.path.exists(icon_path):
             picture = Gtk.Picture.new_for_filename(icon_path)
             picture.set_can_shrink(True)

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from app import ThermalCameraApp
+from .app import ThermalCameraApp
 
 def main():
     try:

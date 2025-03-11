@@ -3,12 +3,12 @@ import cv2
 import time
 from gi.repository import Gtk, GLib, Adw, Gdk
 
-from thermal_view import ThermalView
-from camera_manager import CameraManager
-from image_processor import ImageProcessor
-from recorder import Recorder
-from controls_manager import ControlsManager
-from styles import apply_css
+from .thermal_view import ThermalView
+from .camera_manager import CameraManager
+from .image_processor import ImageProcessor
+from .recorder import Recorder
+from .controls_manager import ControlsManager
+from .styles import apply_css
 
 class ThermalCameraWindow(Adw.ApplicationWindow):
     def __init__(self, *args, **kwargs):

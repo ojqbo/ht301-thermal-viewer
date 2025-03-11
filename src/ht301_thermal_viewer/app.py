@@ -3,7 +3,7 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Adw
 
-from window import ThermalCameraWindow
+from .window import ThermalCameraWindow
 
 class ThermalCameraApp(Adw.Application):
     def __init__(self):

@@ -1,6 +1,6 @@
 # HT301 Thermal Camera Viewer
 
-A modern GTK4 application for viewing and capturing thermal images from the HT301 thermal camera. Built with Python and libadwaita for a native GNOME experience.
+A modern GTK4 application for viewing and capturing thermal images from the HT301 thermal camera. Built with Python and GTK4 for a native GNOME experience.
 
 ![Demo on PC](screenshots/demo_PC_colormap_applied.png)
 
@@ -42,38 +42,57 @@ Works great on mobile Linux distributions like Mobian:
 
 ## Installation
 
-### Dependencies
+### System Dependencies
 
 First, install the required system packages:
 ```bash
-sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-4.0 libadwaita-1-dev
+sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-4.0 python3-opencv python3-numpy
 ```
 
-Then install Python dependencies:
+### Local Installation
+
+1. Clone the repository:
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/ojqbo/ht301-thermal-viewer.git
+cd ht301-thermal-viewer
 ```
 
-### Running the Application
-
-Basic usage:
+2. Run the installer script:
 ```bash
-python3 main.py
+./install.sh
 ```
 
-<details>
-<summary>Alternative setup (make executable)</summary>
+This will:
+- Check for required system dependencies
+- Install the application to your home directory (`~/.local`)
+- Create a desktop entry for easy launching
 
-Make the script executable and run it directly:
+After installation, you can run the application in two ways:
+1. From your applications menu (search for "HT301 Thermal Viewer")
+2. From the terminal:
 ```bash
-chmod +x main.py
-./main.py
+ht301-thermal-viewer
 ```
-</details>
 
-### Flatpak
+Note: You may need to log out and back in for the application to appear in your applications menu.
 
-> 🚧 **Coming Soon!** Flatpak package is under development.
+### Uninstallation
+
+To remove the application, run:
+```bash
+./uninstall.sh
+```
+
+This will remove all application files and desktop entries. Note that system dependencies (python3-gi, python3-opencv, etc.) are not removed by default as they might be needed by other applications.
+
+### Running Without Installation
+
+If you want to run the application directly from the source without installation, you can use:
+```bash
+PYTHONPATH=src python3 -c "from ht301_thermal_viewer.main import main; main()"
+```
+
+Note: This method requires you to be in the project root directory. The application uses relative imports for better package management, which is why we need to set PYTHONPATH to include the `src` directory.
 
 ## About
 
@@ -83,11 +102,10 @@ It has been tested with:
 
 Operating Systems:
 - Ubuntu 24.04
-- Mobian weekly image
+- Mobian (weekly image)
 
 Cameras:
 - HT301 thermal camera
-
 
 ## Credits
 
