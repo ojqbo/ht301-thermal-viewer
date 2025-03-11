@@ -74,9 +74,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                 message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.OK,
                 text="Camera Error",
-            )
-            dialog.format_secondary_text(
-                "Failed to initialize the thermal camera. Please check the connection and try again."
+                secondary_text="Failed to initialize the thermal camera. Please check the connection and try again."
             )
             dialog.connect("response", lambda dialog, response: dialog.destroy())
             dialog.show()
