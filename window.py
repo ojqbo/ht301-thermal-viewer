@@ -292,7 +292,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         if button.get_active():
             # Start recording
             filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.mp4'
-            fourcc = cv2.VideoWriter_fourcc(*'H265')
+            fourcc = cv2.VideoWriter_fourcc(*'avc1')
             self.video_writer = cv2.VideoWriter(filename, fourcc, 25.0, (384, 288))
             self.recording_start_time = time.time()
             self.is_recording = True
