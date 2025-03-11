@@ -17,7 +17,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Set window properties
         self.set_default_size(800, 600)
-        self.set_size_request(384, 288)  # Minimum size based on thermal camera resolution
+        # Allow window to scale below native image resolution
+        self.set_size_request(350, 300)  # Reasonable minimum size for UI elements
         
         # Initialize components
         self.camera_manager = CameraManager()

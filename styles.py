@@ -21,17 +21,17 @@ def apply_css():
             background-color: rgba(255, 255, 255, 0.2);
         }
         .controls button.circular {
-            margin: 8px;
-            padding: 12px;
-            min-width: 48px;
-            min-height: 48px;
+            margin: 6px;
+            padding: 10px;
+            min-width: 42px;
+            min-height: 42px;
             border-radius: 9999px;
         }
         .controls menubutton.circular > button {
-            margin: 8px;
-            padding: 12px;
-            min-width: 48px;
-            min-height: 48px;
+            margin: 6px;
+            padding: 10px;
+            min-width: 42px;
+            min-height: 42px;
             border-radius: 9999px;
         }
         .controls button.circular:hover,
@@ -62,9 +62,9 @@ def apply_css():
         }
         .transform-popover button {
             color: rgba(255, 255, 255, 0.9);
-            padding: 12px;
-            margin: 2px;
-            border-radius: 8px;
+            padding: 8px;
+            margin: 1px;
+            border-radius: 6px;
             transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         .transform-popover button:hover {
@@ -75,8 +75,10 @@ def apply_css():
             background-color: rgba(255, 255, 255, 0.2);
         }
         .transform-popover button image {
-            -gtk-icon-size: 24px;
+            -gtk-icon-size: 20px;
             opacity: 0.9;
+            margin: 0;
+            padding: 0;
         }
         popover > arrow {
             background-color: rgba(0, 0, 0, 0.7);
