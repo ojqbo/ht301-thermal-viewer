@@ -183,17 +183,6 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             return False
         else:
             print("Camera initialization failed!")
-            # Try to show an error dialog to the user
-            dialog = Gtk.MessageDialog(
-                transient_for=self,
-                modal=True,
-                message_type=Gtk.MessageType.ERROR,
-                buttons=Gtk.ButtonsType.OK,
-                text="Camera Error",
-                secondary_text="Failed to initialize the thermal camera. Please check the connection and try again."
-            )
-            dialog.connect("response", lambda dialog, response: dialog.destroy())
-            dialog.show()
             return False
         
     def update_frame(self):

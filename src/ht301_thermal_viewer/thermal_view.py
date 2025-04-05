@@ -37,9 +37,9 @@ class ThermalView(Gtk.Box):
         
     def on_draw(self, drawing_area, cr, width, height):
         if self.current_frame is None:
-            # Show waiting message with proper styling
+            # Show error message with proper styling
             self.status_label.set_visible(True)
-            self.status_label.set_text("Waiting for camera")
+            self.status_label.set_text("Failed to initialize the thermal camera. Please check the connection and try again.")
             return False
             
         try:
