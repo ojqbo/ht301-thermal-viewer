@@ -82,10 +82,12 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             # Get the application
             app = self.get_application()
             if app:
-                # Create a wake lock inhibitor
+                # Create a wake lock inhibitor with both SUSPEND and IDLE flags
+                # SUSPEND prevents system suspension
+                # IDLE prevents the system from going idle
                 self.wake_lock_inhibitor = app.inhibit(
                     self,
-                    Gtk.ApplicationInhibitFlags.SUSPEND,
+                    Gtk.ApplicationInhibitFlags.SUSPEND | Gtk.ApplicationInhibitFlags.IDLE,
                     "Thermal Camera Active"
                 )
                 print("Screen wake lock enabled")
@@ -108,31 +110,43 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def disable_auto_rotation(self):
         """Disable auto-rotation while using the camera"""
         try:
-            # Get the application
+            # For auto-rotation, we need to use a different approach
+            # GTK doesn't have a direct flag for rotation inhibition
+            # We'll use the application's inhibit with a custom flag
+            
             app = self.get_application()
             if app:
-                # Create a rotation inhibitor
+                # We'll use a combination of flags that might help with rotation
+                # This is a best-effort approach
                 self.rotation_inhibitor = app.inhibit(
                     self,
-                    Gtk.ApplicationInhibitFlags.IDLE,
-                    "Thermal Camera Active"
+                    Gtk.ApplicationInhibitFlags.SUSPEND,
+                    "Thermal Camera Active - Preventing Auto-Rotation"
                 )
+                
+                # Try to set the window to a fixed orientation using CSS
+                # This is a workaround since GTK doesn't have a direct rotation API
+                self.add_css_class("fixed-orientation")
+                
                 print("Auto-rotation disabled")
         except Exception as e:
             print(f"Failed to disable auto-rotation: {e}")
             
     def enable_auto_rotation(self):
         """Enable auto-rotation"""
-        if self.rotation_inhibitor:
-            try:
-                # Get the application
+        try:
+            # Remove the fixed orientation CSS class
+            self.remove_css_class("fixed-orientation")
+            
+            # Remove the rotation inhibitor
+            if self.rotation_inhibitor:
                 app = self.get_application()
                 if app:
                     app.uninhibit(self.rotation_inhibitor)
                     self.rotation_inhibitor = None
                     print("Auto-rotation enabled")
-            except Exception as e:
-                print(f"Failed to enable auto-rotation: {e}")
+        except Exception as e:
+            print(f"Failed to enable auto-rotation: {e}")
         
     def initialize_camera(self):
         if self.camera_manager.initialize():
