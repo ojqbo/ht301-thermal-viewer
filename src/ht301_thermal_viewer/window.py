@@ -1,6 +1,7 @@
 import gi
 import cv2
 import time
+import subprocess
 from gi.repository import Gtk, GLib, Adw, Gdk, Gio
 
 from .thermal_view import ThermalView
@@ -26,6 +27,9 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
         # Screen wake lock inhibitor
         self.wake_lock_inhibitor = None
+        
+        # Auto-rotation lock
+        self.original_orientation_lock = None
         
         # Create main layout
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -60,6 +64,24 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.connect("map", self.on_window_map)
         self.connect("unmap", self.on_window_unmap)
         
+        # Get the original orientation lock setting
+        self.get_original_orientation_lock()
+        
+        
+    def get_original_orientation_lock(self):
+        """Get the original orientation lock setting from gsettings"""
+        try:
+            result = subprocess.run(
+                ['gsettings', 'get', 'org.gnome.settings-daemon.peripherals.touchscreen', 'orientation-lock'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            self.original_orientation_lock = result.stdout.strip()
+            print(f"Original orientation lock setting: {self.original_orientation_lock}")
+        except Exception as e:
+            print(f"Failed to get original orientation lock setting: {e}")
+            self.original_orientation_lock = None
         
     def on_window_realize(self, window):
         # Initialize camera after window is realized
@@ -68,10 +90,14 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def on_window_map(self, window):
         # Enable screen wake lock when window is shown
         self.enable_wake_lock()
+        # Disable auto-rotation
+        self.disable_auto_rotation()
         
     def on_window_unmap(self, window):
         # Disable screen wake lock when window is hidden
         self.disable_wake_lock()
+        # Enable auto-rotation
+        self.enable_auto_rotation()
         
     def enable_wake_lock(self):
         """Enable screen wake lock to keep the screen on while using the camera"""
@@ -103,6 +129,37 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                     print("Screen wake lock disabled")
             except Exception as e:
                 print(f"Failed to disable screen wake lock: {e}")
+                
+    def disable_auto_rotation(self):
+        """Disable auto-rotation using gsettings"""
+        try:
+            subprocess.run(
+                ['gsettings', 'set', 'org.gnome.settings-daemon.peripherals.touchscreen', 'orientation-lock', 'true'],
+                check=True
+            )
+            print("Auto-rotation disabled")
+        except Exception as e:
+            print(f"Failed to disable auto-rotation: {e}")
+            
+    def enable_auto_rotation(self):
+        """Enable auto-rotation using gsettings"""
+        try:
+            # Restore the original orientation lock setting
+            if self.original_orientation_lock is not None:
+                subprocess.run(
+                    ['gsettings', 'set', 'org.gnome.settings-daemon.peripherals.touchscreen', 'orientation-lock', self.original_orientation_lock],
+                    check=True
+                )
+                print(f"Auto-rotation restored to original setting: {self.original_orientation_lock}")
+            else:
+                # If we couldn't get the original setting, just set it to false
+                subprocess.run(
+                    ['gsettings', 'set', 'org.gnome.settings-daemon.peripherals.touchscreen', 'orientation-lock', 'false'],
+                    check=True
+                )
+                print("Auto-rotation enabled (default)")
+        except Exception as e:
+            print(f"Failed to enable auto-rotation: {e}")
         
     def initialize_camera(self):
         if self.camera_manager.initialize():
@@ -153,6 +210,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def on_window_close(self, window):
         # Clean up wake lock inhibitor
         self.disable_wake_lock()
+        # Restore auto-rotation
+        self.enable_auto_rotation()
         
         self.recorder.cleanup()
         self.camera_manager.release()
