@@ -1,4 +1,6 @@
 import cv2
+import os
+import subprocess
 
 
 
@@ -49,3 +51,37 @@ def autoExposure(update, T_min, T_max, T_margin, auto_exposure_type, frame):
         if T_max - 2 * T_margin > lmax: update, T_max = True, lmax+T_margin
 
     return update, T_min, T_max
+
+def get_pictures_dir():
+    """Get the system Pictures directory and ensure ThermalCam subdirectory exists."""
+    try:
+        # Get the Pictures directory using xdg-user-dir
+        result = subprocess.run(['xdg-user-dir', 'PICTURES'], capture_output=True, text=True)
+        pictures_dir = result.stdout.strip()
+        
+        # Create ThermalCam subdirectory if it doesn't exist
+        thermalcam_dir = os.path.join(pictures_dir, 'ThermalCam')
+        os.makedirs(thermalcam_dir, exist_ok=True)
+        
+        return thermalcam_dir
+    except Exception as e:
+        print(f"Error getting Pictures directory: {e}")
+        # Fallback to current directory if xdg-user-dir fails
+        return os.getcwd()
+
+def get_videos_dir():
+    """Get the system Videos directory and ensure ThermalCam subdirectory exists."""
+    try:
+        # Get the Videos directory using xdg-user-dir
+        result = subprocess.run(['xdg-user-dir', 'VIDEOS'], capture_output=True, text=True)
+        videos_dir = result.stdout.strip()
+        
+        # Create ThermalCam subdirectory if it doesn't exist
+        thermalcam_dir = os.path.join(videos_dir, 'ThermalCam')
+        os.makedirs(thermalcam_dir, exist_ok=True)
+        
+        return thermalcam_dir
+    except Exception as e:
+        print(f"Error getting Videos directory: {e}")
+        # Fallback to current directory if xdg-user-dir fails
+        return os.getcwd()

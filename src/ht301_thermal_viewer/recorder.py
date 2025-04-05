@@ -1,5 +1,7 @@
 import cv2
 import time
+import os
+from .utils import get_videos_dir
 
 class Recorder:
     def __init__(self):
@@ -16,8 +18,9 @@ class Recorder:
         try:
             height, width = frame.shape[:2]
             filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.mp4'
+            save_path = os.path.join(get_videos_dir(), filename)
             fourcc = cv2.VideoWriter_fourcc(*'avc1')
-            self.video_writer = cv2.VideoWriter(filename, fourcc, 25.0, (width, height))
+            self.video_writer = cv2.VideoWriter(save_path, fourcc, 25.0, (width, height))
             self.recording_start_time = time.time()
             self.is_recording = True
             return True

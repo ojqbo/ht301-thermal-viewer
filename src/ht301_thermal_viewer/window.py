@@ -2,6 +2,7 @@ import gi
 import cv2
 import time
 import subprocess
+import os
 from gi.repository import Gtk, GLib, Adw, Gdk, Gio
 
 from .thermal_view import ThermalView
@@ -10,6 +11,7 @@ from .image_processor import ImageProcessor
 from .recorder import Recorder
 from .controls_manager import ControlsManager
 from .styles import apply_css
+from .utils import get_pictures_dir
 
 class ThermalCameraWindow(Adw.ApplicationWindow):
     def __init__(self, *args, **kwargs):
@@ -204,8 +206,9 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def save_screenshot(self):
         if self.thermal_view.current_frame is not None:
             filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.png'
-            cv2.imwrite(filename, self.thermal_view.current_frame)
-            print(f"Screenshot saved as {filename}")
+            save_path = os.path.join(get_pictures_dir(), filename)
+            cv2.imwrite(save_path, self.thermal_view.current_frame)
+            print(f"Screenshot saved as {save_path}")
             
     def on_window_close(self, window):
         # Clean up wake lock inhibitor
