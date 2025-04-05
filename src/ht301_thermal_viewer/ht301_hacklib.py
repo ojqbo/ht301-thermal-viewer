@@ -307,7 +307,7 @@ class HT301:
         self.frame = frame
         self.meta  = meta
         self.device_strings  = device_strings
-        return ret, self.frame
+        return ret, self.frame, self.frame_raw
 
     def info(self):
         width, height = self.frame.shape

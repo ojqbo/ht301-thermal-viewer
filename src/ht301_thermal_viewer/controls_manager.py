@@ -253,7 +253,7 @@ class ControlsManager:
         
     def _on_record_toggled(self, button):
         if button.get_active():
-            if self.recorder.start_recording(self.window.thermal_view.current_frame):
+            if self.recorder.start_recording(self.window.thermal_view.current_frame, self.window.thermal_view.frame_raw):
                 button.set_icon_name("media-playback-stop-symbolic")
                 button.set_tooltip_text("Stop Recording")
                 button.add_css_class("recording")

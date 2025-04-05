@@ -23,13 +23,13 @@ class CameraManager:
         """Read a frame from the camera and process it."""
         if self.cap is None:
             print("Cannot read frame - camera not initialized")
-            return False, None, None
+            return False, None, None, None
             
         try:
-            ret, frame = self.cap.read()
+            ret, frame, frame_raw = self.cap.read()
             if not ret:
                 print("Failed to read frame from camera")
-                return False, None, None
+                return False, None, None, None
                 
             info, lut = self.cap.info()
             frame = frame.astype(np.float32)
@@ -39,10 +39,10 @@ class CameraManager:
             frame /= frame.max()
             frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
             
-            return True, frame, info
+            return True, frame, frame_raw, info
         except Exception as e:
             print(f"Error reading frame: {e}")
-            return False, None, None
+            return False, None, None, None
             
     def calibrate(self):
         """Calibrate the camera."""

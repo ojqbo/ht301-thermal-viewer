@@ -4,6 +4,7 @@ import time
 import subprocess
 import os
 from gi.repository import Gtk, GLib, Adw, Gdk, Gio
+import numpy as np
 
 from .thermal_view import ThermalView
 from .camera_manager import CameraManager
@@ -185,7 +186,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
     def update_frame(self):
         try:
-            ret, frame, info = self.camera_manager.read_frame()
+            ret, frame, frame_raw, info = self.camera_manager.read_frame()
             if not ret:
                 print("Failed to read frame in update_frame")
                 return True  # Keep the loop running even if we fail
@@ -194,10 +195,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             processed_frame = self.image_processor.process_frame(frame, info)
             
             # Write frame if recording
-            self.recorder.write_frame(processed_frame)
+            self.recorder.write_frame(processed_frame, frame_raw)
             
             # Update display
-            self.thermal_view.update_frame(processed_frame)
+            self.thermal_view.update_frame(processed_frame, frame_raw)
             return True
         except Exception as e:
             print(f"Error in update_frame: {e}")

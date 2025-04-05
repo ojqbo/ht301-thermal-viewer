@@ -28,8 +28,9 @@ class ThermalView(Gtk.Box):
         # Add the overlay to the box
         self.append(self.overlay)
         
-    def update_frame(self, frame):
+    def update_frame(self, frame, frame_raw):
         self.current_frame = frame
+        self.frame_raw = frame_raw
         self.frame_count += 1
         self.status_label.set_visible(False)
         self.drawing_area.queue_draw()
