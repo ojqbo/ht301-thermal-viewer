@@ -24,9 +24,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.image_processor = ImageProcessor()
         self.recorder = Recorder()
         
-        # Screen wake lock and auto-rotation inhibitors
+        # Screen wake lock inhibitor
         self.wake_lock_inhibitor = None
-        self.rotation_inhibitor = None
         
         # Create main layout
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -67,14 +66,12 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         GLib.idle_add(self.initialize_camera)
         
     def on_window_map(self, window):
-        # Enable screen wake lock and disable auto-rotation when window is shown
+        # Enable screen wake lock when window is shown
         self.enable_wake_lock()
-        self.disable_auto_rotation()
         
     def on_window_unmap(self, window):
-        # Disable screen wake lock and enable auto-rotation when window is hidden
+        # Disable screen wake lock when window is hidden
         self.disable_wake_lock()
-        self.enable_auto_rotation()
         
     def enable_wake_lock(self):
         """Enable screen wake lock to keep the screen on while using the camera"""
@@ -106,47 +103,6 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
                     print("Screen wake lock disabled")
             except Exception as e:
                 print(f"Failed to disable screen wake lock: {e}")
-                
-    def disable_auto_rotation(self):
-        """Disable auto-rotation while using the camera"""
-        try:
-            # For auto-rotation, we need to use a different approach
-            # GTK doesn't have a direct flag for rotation inhibition
-            # We'll use the application's inhibit with a custom flag
-            
-            app = self.get_application()
-            if app:
-                # We'll use a combination of flags that might help with rotation
-                # This is a best-effort approach
-                self.rotation_inhibitor = app.inhibit(
-                    self,
-                    Gtk.ApplicationInhibitFlags.SUSPEND,
-                    "Thermal Camera Active - Preventing Auto-Rotation"
-                )
-                
-                # Try to set the window to a fixed orientation using CSS
-                # This is a workaround since GTK doesn't have a direct rotation API
-                self.add_css_class("fixed-orientation")
-                
-                print("Auto-rotation disabled")
-        except Exception as e:
-            print(f"Failed to disable auto-rotation: {e}")
-            
-    def enable_auto_rotation(self):
-        """Enable auto-rotation"""
-        try:
-            # Remove the fixed orientation CSS class
-            self.remove_css_class("fixed-orientation")
-            
-            # Remove the rotation inhibitor
-            if self.rotation_inhibitor:
-                app = self.get_application()
-                if app:
-                    app.uninhibit(self.rotation_inhibitor)
-                    self.rotation_inhibitor = None
-                    print("Auto-rotation enabled")
-        except Exception as e:
-            print(f"Failed to enable auto-rotation: {e}")
         
     def initialize_camera(self):
         if self.camera_manager.initialize():
@@ -195,9 +151,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             print(f"Screenshot saved as {filename}")
             
     def on_window_close(self, window):
-        # Clean up inhibitors
+        # Clean up wake lock inhibitor
         self.disable_wake_lock()
-        self.enable_auto_rotation()
         
         self.recorder.cleanup()
         self.camera_manager.release()
