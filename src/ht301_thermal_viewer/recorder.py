@@ -2,6 +2,7 @@ import cv2
 import time
 import os
 import numpy as np
+from pathlib import Path
 from .utils import get_videos_dir
 
 class Recorder:
@@ -23,11 +24,11 @@ class Recorder:
             # Setup video recording
             height, width = frame.shape[:2]
             base_filename = time.strftime("%Y-%m-%d_%H:%M:%S")
-            video_path = os.path.join(get_videos_dir(), base_filename + '.mp4')
+            video_path = Path(get_videos_dir()) / f"{base_filename}.mp4"
             
             # Initialize video writer
             fourcc = cv2.VideoWriter_fourcc(*'avc1')
-            self.video_writer = cv2.VideoWriter(video_path, fourcc, 25.0, (width, height))
+            self.video_writer = cv2.VideoWriter(str(video_path), fourcc, 25.0, (width, height))
             
             self.recording_start_time = time.time()
             self.is_recording = True
@@ -45,10 +46,10 @@ class Recorder:
             
         try:
             base_filename = time.strftime("%Y-%m-%d_%H:%M:%S")
-            raw_path = os.path.join(get_videos_dir(), base_filename + '.raw')
+            raw_path = Path(get_videos_dir()) / f"{base_filename}.raw"
             
             # Initialize raw data file
-            self.raw_file = open(raw_path, 'wb')
+            self.raw_file = open(str(raw_path), 'wb')
             # Write header with frame dimensions and data type
             header = np.array([frame_raw.shape[0], frame_raw.shape[1], frame_raw.dtype.itemsize], dtype=np.int32)
             header.tofile(self.raw_file)

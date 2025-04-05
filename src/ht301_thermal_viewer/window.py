@@ -3,6 +3,7 @@ import cv2
 import time
 import subprocess
 import os
+from pathlib import Path
 from gi.repository import Gtk, GLib, Adw, Gdk, Gio
 import numpy as np
 
@@ -71,7 +72,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         
     def apply_css(self):
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_path("ht301_thermal_viewer/styles.css")
+        css_provider.load_from_path(str(Path(__file__).parent / "styles.css"))
         
         # Get the default display
         display = Gdk.Display.get_default()
@@ -219,8 +220,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def save_screenshot(self):
         if self.thermal_view.current_frame is not None:
             filename = time.strftime("%Y-%m-%d_%H:%M:%S") + '.png'
-            save_path = os.path.join(get_pictures_dir(), filename)
-            cv2.imwrite(save_path, self.thermal_view.current_frame)
+            save_path = Path(get_pictures_dir()) / filename
+            cv2.imwrite(str(save_path), self.thermal_view.current_frame)
             print(f"Screenshot saved as {save_path}")
             
     def on_window_close(self, window):

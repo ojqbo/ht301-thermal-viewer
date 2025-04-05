@@ -1,6 +1,7 @@
 import cv2
 import os
 import subprocess
+from pathlib import Path
 
 
 
@@ -57,31 +58,31 @@ def get_pictures_dir():
     try:
         # Get the Pictures directory using xdg-user-dir
         result = subprocess.run(['xdg-user-dir', 'PICTURES'], capture_output=True, text=True)
-        pictures_dir = result.stdout.strip()
+        pictures_dir = Path(result.stdout.strip())
         
         # Create ThermalCam subdirectory if it doesn't exist
-        thermalcam_dir = os.path.join(pictures_dir, 'ThermalCam')
-        os.makedirs(thermalcam_dir, exist_ok=True)
+        thermalcam_dir = pictures_dir / 'ThermalCam'
+        thermalcam_dir.mkdir(exist_ok=True)
         
-        return thermalcam_dir
+        return str(thermalcam_dir)
     except Exception as e:
         print(f"Error getting Pictures directory: {e}")
         # Fallback to current directory if xdg-user-dir fails
-        return os.getcwd()
+        return str(Path.cwd())
 
 def get_videos_dir():
     """Get the system Videos directory and ensure ThermalCam subdirectory exists."""
     try:
         # Get the Videos directory using xdg-user-dir
         result = subprocess.run(['xdg-user-dir', 'VIDEOS'], capture_output=True, text=True)
-        videos_dir = result.stdout.strip()
+        videos_dir = Path(result.stdout.strip())
         
         # Create ThermalCam subdirectory if it doesn't exist
-        thermalcam_dir = os.path.join(videos_dir, 'ThermalCam')
-        os.makedirs(thermalcam_dir, exist_ok=True)
+        thermalcam_dir = videos_dir / 'ThermalCam'
+        thermalcam_dir.mkdir(exist_ok=True)
         
-        return thermalcam_dir
+        return str(thermalcam_dir)
     except Exception as e:
         print(f"Error getting Videos directory: {e}")
         # Fallback to current directory if xdg-user-dir fails
-        return os.getcwd()
+        return str(Path.cwd())
