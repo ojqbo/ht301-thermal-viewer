@@ -79,13 +79,13 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
     def enable_wake_lock(self):
         """Enable screen wake lock to keep the screen on while using the camera"""
         try:
-            # Get the display
-            display = self.get_display()
-            if display:
+            # Get the application
+            app = self.get_application()
+            if app:
                 # Create a wake lock inhibitor
-                self.wake_lock_inhibitor = display.inhibit(
+                self.wake_lock_inhibitor = app.inhibit(
                     self,
-                    Gdk.DisplayInhibitFlags.SUSPEND,
+                    Gtk.ApplicationInhibitFlags.SUSPEND,
                     "Thermal Camera Active"
                 )
                 print("Screen wake lock enabled")
@@ -96,22 +96,25 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         """Disable screen wake lock"""
         if self.wake_lock_inhibitor:
             try:
-                self.wake_lock_inhibitor.uninhibit()
-                self.wake_lock_inhibitor = None
-                print("Screen wake lock disabled")
+                # Get the application
+                app = self.get_application()
+                if app:
+                    app.uninhibit(self.wake_lock_inhibitor)
+                    self.wake_lock_inhibitor = None
+                    print("Screen wake lock disabled")
             except Exception as e:
                 print(f"Failed to disable screen wake lock: {e}")
                 
     def disable_auto_rotation(self):
         """Disable auto-rotation while using the camera"""
         try:
-            # Get the display
-            display = self.get_display()
-            if display:
+            # Get the application
+            app = self.get_application()
+            if app:
                 # Create a rotation inhibitor
-                self.rotation_inhibitor = display.inhibit(
+                self.rotation_inhibitor = app.inhibit(
                     self,
-                    Gdk.DisplayInhibitFlags.ROTATE,
+                    Gtk.ApplicationInhibitFlags.IDLE,
                     "Thermal Camera Active"
                 )
                 print("Auto-rotation disabled")
@@ -122,9 +125,12 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         """Enable auto-rotation"""
         if self.rotation_inhibitor:
             try:
-                self.rotation_inhibitor.uninhibit()
-                self.rotation_inhibitor = None
-                print("Auto-rotation enabled")
+                # Get the application
+                app = self.get_application()
+                if app:
+                    app.uninhibit(self.rotation_inhibitor)
+                    self.rotation_inhibitor = None
+                    print("Auto-rotation enabled")
             except Exception as e:
                 print(f"Failed to enable auto-rotation: {e}")
         
