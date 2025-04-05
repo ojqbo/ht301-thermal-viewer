@@ -6,4 +6,5 @@ Icon=screenshots/demo_PC_colormap_applied.png
 Terminal=false
 Type=Application
 Categories=Graphics;Photography;
-Keywords=thermal;camera;imaging;temperature; 
+Keywords=thermal;camera;imaging;temperature;
+X-Purism-FormFactor=Workstation;Mobile;
