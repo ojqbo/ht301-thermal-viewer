@@ -1,0 +1,240 @@
+
+.main-box {
+    background-color: black;
+}
+window {
+    background-color: black;
+}
+.controls-container {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    padding: 4px;
+}
+.controls-left {
+    background-color: rgba(244, 67, 54, 0.2);
+}
+.controls-right {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.controls button.circular {
+    margin: 6px;
+    padding: 10px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 9999px;
+}
+.controls menubutton.circular > button {
+    margin: 6px;
+    padding: 10px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 9999px;
+}
+.controls button.circular:hover,
+.controls menubutton.circular > button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.calibrate-button {
+    color: black;
+    -gtk-icon-size: 24px;
+}
+.temp-toggle-button {
+    color: black;
+    -gtk-icon-size: 24px;
+}
+.colormap-button {
+    color: black;
+    -gtk-icon-size: 24px;
+}
+.transform-button {
+    color: black;
+    -gtk-icon-size: 24px;
+}
+.colormap-popover {
+    background-color: rgba(0, 0, 0, 0);
+}
+.transform-popover {
+    background-color: rgba(0, 0, 0, 0);
+}
+.transform-popover button {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    margin: 1px;
+    border-radius: 6px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.transform-popover button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(2px);
+}
+.transform-popover button:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.transform-popover button image {
+    -gtk-icon-size: 20px;
+    opacity: 0.9;
+    margin: 0;
+    padding: 0;
+}
+popover > arrow {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+popover > contents {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+}
+.colormap-grid {
+    margin: 4px;
+    padding: 4px;
+}
+.colormap-option {
+    padding: 0;
+    margin: 2px;
+    border-radius: 8px;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    background: none;
+    border: 2px solid transparent;
+}
+.colormap-preview {
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+}
+.colormap-option:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+.colormap-option.selected {
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.colormap-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 500;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    padding: 8px 4px 4px 4px;
+    border-radius: 0 0 8px 8px;
+    margin: 0;
+}
+.status-label {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px;
+}
+.shutter-button {
+    min-width: 52px;
+    min-height: 52px;
+    margin: 8px;
+    padding: 0;
+    color: white;
+    -gtk-icon-size: 24px;
+    background: transparent;
+    box-shadow: inset 0 0 0 2.5px rgba(33, 150, 243, 0.8);
+    border: none;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shutter-button:hover {
+    transform: scale(1.05);
+    box-shadow: inset 0 0 0 3px rgba(33, 150, 243, 1),
+               0 0 12px rgba(33, 150, 243, 0.3);
+}
+
+.shutter-button:active {
+    transform: scale(0.95);
+    background: radial-gradient(circle, rgba(33, 150, 243, 1) 0%, rgba(33, 150, 243, 0.8) 100%);
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+}
+
+.record-button {
+    min-width: 52px;
+    min-height: 52px;
+    margin: 8px;
+    padding: 0;
+    color: white;
+    -gtk-icon-size: 24px;
+    background: transparent;
+    box-shadow: inset 0 0 0 2.5px rgba(244, 67, 54, 0.8);
+    border: none;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.record-button.recording {
+    background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+    box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+    animation: record-pulse 1.5s ease-in-out infinite;
+}
+
+.record-button:hover {
+    transform: scale(1.05);
+    box-shadow: inset 0 0 0 3px rgba(244, 67, 54, 1),
+               0 0 12px rgba(244, 67, 54, 0.3);
+}
+
+.record-button.recording:hover {
+    transform: scale(1.05);
+    background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.9) 100%);
+    box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+}
+
+@keyframes record-pulse {
+    0% { 
+        box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+        background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
+        background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.9) 100%);
+    }
+    100% { 
+        box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+        background: radial-gradient(circle, rgba(244, 67, 54, 1) 0%, rgba(244, 67, 54, 0.8) 100%);
+    }
+}
+
+.quit-button {
+    color: rgba(255, 255, 255, 0.8);
+    -gtk-icon-size: 24px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quit-button:hover {
+    color: rgba(244, 67, 54, 1);
+    background-color: rgba(244, 67, 54, 0.2);
+    transform: scale(1.1);
+}
+
+.raw-record-button {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: rgb(0, 255, 0);
+    border: 2px solid rgb(0, 255, 0);
+    min-width: 48px;
+    min-height: 48px;
+    margin: 0 8px;
+    transition: all 200ms ease-in-out;
+}
+
+.raw-record-button:hover {
+    background-color: rgba(0, 255, 0, 0.3);
+}
+
+.raw-record-button.recording {
+    background-color: rgba(0, 255, 0, 0.4);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 255, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+    }
+} 

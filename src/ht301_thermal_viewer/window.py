@@ -11,7 +11,6 @@ from .camera_manager import CameraManager
 from .image_processor import ImageProcessor
 from .recorder import Recorder
 from .controls_manager import ControlsManager
-from .styles import apply_css
 from .utils import get_pictures_dir
 
 class ThermalCameraWindow(Adw.ApplicationWindow):
@@ -56,7 +55,7 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.thermal_view.overlay.add_overlay(self.controls_manager.top_controls)
         
         # Apply CSS styles
-        apply_css()
+        self.apply_css()
         
         # Set window content
         self.set_content(self.main_box)
@@ -70,6 +69,18 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         # Get the original orientation lock setting
         self.get_original_orientation_lock()
         
+    def apply_css(self):
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path("ht301_thermal_viewer/styles.css")
+        
+        # Get the default display
+        display = Gdk.Display.get_default()
+        if display is not None:
+            Gtk.StyleContext.add_provider_for_display(
+                display,
+                css_provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
         
     def get_original_orientation_lock(self):
         """Get the original orientation lock setting from gsettings"""
@@ -195,7 +206,8 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             processed_frame = self.image_processor.process_frame(frame, info)
             
             # Write frame if recording
-            self.recorder.write_frame(processed_frame, frame_raw)
+            self.recorder.write_frame(processed_frame)
+            self.recorder.write_raw_frame(frame_raw)
             
             # Update display
             self.thermal_view.update_frame(processed_frame, frame_raw)

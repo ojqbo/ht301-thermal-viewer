@@ -103,6 +103,16 @@ class ControlsManager:
         self.record_button.set_tooltip_text("Start Recording")
         self.controls.append(self.record_button)
         
+        # Raw Record button
+        self.raw_record_button = Gtk.ToggleButton()
+        self.raw_record_button.set_icon_name("media-record-symbolic")
+        self.raw_record_button.add_css_class("circular")
+        self.raw_record_button.add_css_class("flat")
+        self.raw_record_button.add_css_class("raw-record-button")
+        self.raw_record_button.connect("toggled", self._on_raw_record_toggled)
+        self.raw_record_button.set_tooltip_text("Start Raw Recording")
+        self.controls.append(self.raw_record_button)
+        
         # Calibrate button
         calibrate_button = Gtk.Button()
         calibrate_button.set_icon_name("view-refresh-symbolic")
@@ -253,7 +263,7 @@ class ControlsManager:
         
     def _on_record_toggled(self, button):
         if button.get_active():
-            if self.recorder.start_recording(self.window.thermal_view.current_frame, self.window.thermal_view.frame_raw):
+            if self.recorder.start_recording(self.window.thermal_view.current_frame):
                 button.set_icon_name("media-playback-stop-symbolic")
                 button.set_tooltip_text("Stop Recording")
                 button.add_css_class("recording")
@@ -261,6 +271,18 @@ class ControlsManager:
             self.recorder.stop_recording()
             button.set_icon_name("media-record-symbolic")
             button.set_tooltip_text("Start Recording")
+            button.remove_css_class("recording")
+            
+    def _on_raw_record_toggled(self, button):
+        if button.get_active():
+            if self.recorder.start_raw_recording(self.window.camera_manager.cap.frame_raw):
+                button.set_icon_name("media-playback-stop-symbolic")
+                button.set_tooltip_text("Stop Raw Recording")
+                button.add_css_class("recording")
+        else:
+            self.recorder.stop_raw_recording()
+            button.set_icon_name("media-record-symbolic")
+            button.set_tooltip_text("Start Raw Recording")
             button.remove_css_class("recording")
             
     def _on_calibrate_clicked(self, button):
