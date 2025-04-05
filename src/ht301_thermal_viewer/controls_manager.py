@@ -111,6 +111,12 @@ class ControlsManager:
         self.raw_record_button.add_css_class("raw-record-button")
         self.raw_record_button.connect("toggled", self._on_raw_record_toggled)
         self.raw_record_button.set_tooltip_text("Start Raw Recording")
+        
+        # Create and store the raw record label
+        self.raw_record_label = Gtk.Label(label="REC\nRAW\nDATA")
+        self.raw_record_label.add_css_class("raw-record-label")
+        self.raw_record_button.set_child(self.raw_record_label)
+        
         self.controls.append(self.raw_record_button)
         
         # Calibrate button
@@ -276,12 +282,16 @@ class ControlsManager:
     def _on_raw_record_toggled(self, button):
         if button.get_active():
             if self.recorder.start_raw_recording(self.window.camera_manager.cap.frame_raw):
+                # Remove the label and set the stop icon
+                button.set_child(None)
                 button.set_icon_name("media-playback-stop-symbolic")
                 button.set_tooltip_text("Stop Raw Recording")
                 button.add_css_class("recording")
         else:
             self.recorder.stop_raw_recording()
-            button.set_icon_name("media-record-symbolic")
+            # Remove the stop icon and restore the label
+            button.set_icon_name("")
+            button.set_child(self.raw_record_label)
             button.set_tooltip_text("Start Raw Recording")
             button.remove_css_class("recording")
             
