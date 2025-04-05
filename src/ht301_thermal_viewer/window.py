@@ -1,7 +1,7 @@
 import gi
 import cv2
 import time
-from gi.repository import Gtk, GLib, Adw, Gdk
+from gi.repository import Gtk, GLib, Adw, Gdk, Gio
 
 from .thermal_view import ThermalView
 from .camera_manager import CameraManager
@@ -23,6 +23,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         self.camera_manager = CameraManager()
         self.image_processor = ImageProcessor()
         self.recorder = Recorder()
+        
+        # Screen wake lock and auto-rotation inhibitors
+        self.wake_lock_inhibitor = None
+        self.rotation_inhibitor = None
         
         # Create main layout
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -54,11 +58,75 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
         # Connect window signals
         self.connect("close-request", self.on_window_close)
         self.connect("realize", self.on_window_realize)
+        self.connect("map", self.on_window_map)
+        self.connect("unmap", self.on_window_unmap)
         
         
     def on_window_realize(self, window):
         # Initialize camera after window is realized
         GLib.idle_add(self.initialize_camera)
+        
+    def on_window_map(self, window):
+        # Enable screen wake lock and disable auto-rotation when window is shown
+        self.enable_wake_lock()
+        self.disable_auto_rotation()
+        
+    def on_window_unmap(self, window):
+        # Disable screen wake lock and enable auto-rotation when window is hidden
+        self.disable_wake_lock()
+        self.enable_auto_rotation()
+        
+    def enable_wake_lock(self):
+        """Enable screen wake lock to keep the screen on while using the camera"""
+        try:
+            # Get the display
+            display = self.get_display()
+            if display:
+                # Create a wake lock inhibitor
+                self.wake_lock_inhibitor = display.inhibit(
+                    self,
+                    Gdk.DisplayInhibitFlags.SUSPEND,
+                    "Thermal Camera Active"
+                )
+                print("Screen wake lock enabled")
+        except Exception as e:
+            print(f"Failed to enable screen wake lock: {e}")
+            
+    def disable_wake_lock(self):
+        """Disable screen wake lock"""
+        if self.wake_lock_inhibitor:
+            try:
+                self.wake_lock_inhibitor.uninhibit()
+                self.wake_lock_inhibitor = None
+                print("Screen wake lock disabled")
+            except Exception as e:
+                print(f"Failed to disable screen wake lock: {e}")
+                
+    def disable_auto_rotation(self):
+        """Disable auto-rotation while using the camera"""
+        try:
+            # Get the display
+            display = self.get_display()
+            if display:
+                # Create a rotation inhibitor
+                self.rotation_inhibitor = display.inhibit(
+                    self,
+                    Gdk.DisplayInhibitFlags.ROTATE,
+                    "Thermal Camera Active"
+                )
+                print("Auto-rotation disabled")
+        except Exception as e:
+            print(f"Failed to disable auto-rotation: {e}")
+            
+    def enable_auto_rotation(self):
+        """Enable auto-rotation"""
+        if self.rotation_inhibitor:
+            try:
+                self.rotation_inhibitor.uninhibit()
+                self.rotation_inhibitor = None
+                print("Auto-rotation enabled")
+            except Exception as e:
+                print(f"Failed to enable auto-rotation: {e}")
         
     def initialize_camera(self):
         if self.camera_manager.initialize():
@@ -107,6 +175,10 @@ class ThermalCameraWindow(Adw.ApplicationWindow):
             print(f"Screenshot saved as {filename}")
             
     def on_window_close(self, window):
+        # Clean up inhibitors
+        self.disable_wake_lock()
+        self.enable_auto_rotation()
+        
         self.recorder.cleanup()
         self.camera_manager.release()
         self.get_application().quit()
